@@ -1,0 +1,14 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/page": "/admin",
+  "/dashboard/favorites/page": "/dashboard/favorites",
+  "/dashboard/new-listing/page": "/dashboard/new-listing",
+  "/dashboard/page": "/dashboard",
+  "/dashboard/properties/page": "/dashboard/properties",
+  "/listings/[id]/page": "/listings/[id]",
+  "/listings/page": "/listings",
+  "/login/page": "/login",
+  "/page": "/",
+  "/register/page": "/register"
+}
