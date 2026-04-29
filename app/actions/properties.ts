@@ -171,11 +171,11 @@ export async function deleteProperty(id: string): Promise<{ error?: string }> {
   redirect("/dashboard/properties");
 }
 
-export async function approveProperty(id: string): Promise<{ error?: string }> {
+export async function approveProperty(id: string): Promise<void> {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Ou dwe konekte." };
+  if (!user) return;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -183,25 +183,22 @@ export async function approveProperty(id: string): Promise<{ error?: string }> {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "admin") return { error: "Aksyon sa a rezève pou admin." };
+  if (profile?.role !== "admin") return;
 
-  const { error } = await supabase
+  await supabase
     .from("properties")
     .update({ status: "active", updated_at: new Date().toISOString() })
     .eq("id", id);
 
-  if (error) return { error: error.message };
-
   revalidatePath("/admin");
   revalidatePath("/listings");
-  return {};
 }
 
-export async function rejectProperty(id: string): Promise<{ error?: string }> {
+export async function rejectProperty(id: string): Promise<void> {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Ou dwe konekte." };
+  if (!user) return;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -209,15 +206,12 @@ export async function rejectProperty(id: string): Promise<{ error?: string }> {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "admin") return { error: "Aksyon sa a rezève pou admin." };
+  if (profile?.role !== "admin") return;
 
-  const { error } = await supabase
+  await supabase
     .from("properties")
     .update({ status: "suspended", updated_at: new Date().toISOString() })
     .eq("id", id);
 
-  if (error) return { error: error.message };
-
   revalidatePath("/admin");
-  return {};
 }
