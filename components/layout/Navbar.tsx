@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { useState } from "react";
-import { Search, MapPin, PlusCircle, LogIn, Home } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Search, MapPin, PlusCircle, LogIn, Home, User, LogOut } from "lucide-react";
 import { COMMUNES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const CATEGORY_PILLS = [
   { href: "/listings", label: "Tout Anons", exact: true },
@@ -21,8 +23,41 @@ const CATEGORY_PILLS = [
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [commune, setCommune] = useState("");
   const [query, setQuery] = useState("");
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  function isPillActive(href: string): boolean {
+    const [hrefPath, hrefQs] = href.split("?");
+    if (pathname !== hrefPath) return false;
+    if (!hrefQs) {
+      // "Tout Anons" — aktif sèlman si pa gen filtre
+      const filtered = [...searchParams.entries()].filter(([k]) => k !== "page" && k !== "view");
+      return filtered.length === 0;
+    }
+    const pillParams = new URLSearchParams(hrefQs);
+    for (const [k, v] of pillParams) {
+      if (searchParams.get(k) !== v) return false;
+    }
+    return true;
+  }
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -31,8 +66,6 @@ export default function Navbar() {
     if (query) params.set("q", query);
     router.push(`/listings${params.toString() ? `?${params}` : ""}`);
   }
-
-  const isHome = pathname === "/";
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
@@ -96,13 +129,32 @@ export default function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2 ml-auto md:ml-0">
-            <Link
-              href="/login"
-              className="hidden md:flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              <LogIn className="w-4 h-4" />
-              Konekte
-            </Link>
+            {user ? (
+              <div className="hidden md:flex items-center gap-1">
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <User className="w-4 h-4" />
+                  Tableau de Bò
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-red-600 px-2 py-2 rounded-lg hover:bg-red-50 transition-colors"
+                  title="Dekonekte"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden md:flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                Konekte
+              </Link>
+            )}
             <Link
               href="/dashboard/new-listing"
               className="flex items-center gap-1.5 px-4 py-2 bg-sunset-500 hover:bg-sunset-600 active:scale-95 text-white font-bold text-sm rounded-xl transition-all shadow-sm"
@@ -125,8 +177,8 @@ export default function Navbar() {
                 href={href}
                 className={cn(
                   "shrink-0 px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
-                  pathname === "/listings" && (href === "/listings" || isHome)
-                    ? "text-slate-600 hover:bg-slate-50"
+                  isPillActive(href)
+                    ? "bg-caribbean-50 text-caribbean-700 font-semibold"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 )}
               >

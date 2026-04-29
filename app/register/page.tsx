@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Home, User, Mail, Lock, Phone, Eye, EyeOff, ArrowRight, AlertCircle, BadgeCheck } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import type { UserRole } from "@/types";
 
 const ROLES: { value: UserRole; label: string; desc: string; icon: string }[] = [
@@ -49,12 +50,41 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
-    // TODO: Supabase auth signup
-    // const { error } = await supabase.auth.signUp({
-    //   email, password,
-    //   options: { data: { full_name: fullName, phone, role } }
-    // })
-    await new Promise((r) => setTimeout(r, 1000));
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName, role },
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+
+    console.log("signUp result:", { data, error });
+
+    if (error) {
+      console.error("signUp error:", error.message);
+      setError(error.message === "User already registered"
+        ? "Email sa a deja itilize. Eseye konekte."
+        : error.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!data.user) {
+      setError("Kont kreye men li oblije konfime email — tcheke inbox ou.");
+      setLoading(false);
+      return;
+    }
+
+    // Mete jou profil ak phone/whatsapp (trigger kreye profil la deja)
+    if (data.user && phone) {
+      await supabase
+        .from("profiles")
+        .update({ phone, whatsapp: phone.replace(/\D/g, "") })
+        .eq("id", data.user.id);
+    }
+
     setSuccess(true);
     setLoading(false);
   }

@@ -7,7 +7,7 @@ import {
   Flame, BadgeCheck, Eye, MessageCircle, Share2, Flag,
   ChevronLeft, Phone, Star
 } from "lucide-react";
-import { getMockPropertyById, MOCK_PROPERTIES } from "@/lib/mock-data";
+import { getPropertyById, getSimilarProperties } from "@/lib/supabase/queries";
 import { formatPrice, getPropertyTypeLabel, buildWhatsAppUrl, getPropertyRef, timeAgo } from "@/lib/utils";
 import PropertyCard from "@/components/properties/PropertyCard";
 import type { Property } from "@/types";
@@ -18,7 +18,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const property = getMockPropertyById(id);
+  const property = await getPropertyById(id);
   if (!property) return { title: "Pa Jwenn" };
   return {
     title: property.title,
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params;
-  const property = getMockPropertyById(id);
+  const property = await getPropertyById(id);
   if (!property) notFound();
 
   const whatsappUrl = property.owner?.whatsapp
@@ -48,12 +48,9 @@ export default async function PropertyDetailPage({ params }: Props) {
     { show: property.is_furnished,    icon: Star,       label: "Mèble Konplèt",   color: "text-purple-600 bg-purple-50" },
   ].filter((a) => a.show);
 
-  const similar = MOCK_PROPERTIES.filter(
-    (p) =>
-      p.id !== property.id &&
-      p.location?.commune === property.location?.commune &&
-      p.status === "active"
-  ).slice(0, 3);
+  const similar = property.location?.commune
+    ? await getSimilarProperties(property.id, property.location.commune)
+    : [];
 
   const photos = property.photos ?? [];
 

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { COMMUNES, LOCATIONS, PROPERTY_TYPE_LABELS } from "@/lib/constants";
 import type { PropertyType, ListingType, Currency } from "@/types";
+import { createProperty } from "@/app/actions/properties";
 
 const STEPS = [
   { id: 1, label: "Tip",       icon: Home       },
@@ -109,14 +110,32 @@ export default function NewListingPage() {
     setLoading(true);
     setError("");
 
-    // TODO: Upload photos to Cloudinary, then save to Supabase
-    // const formData = new FormData()
-    // photos.forEach(p => formData.append("files", p))
-    // const uploadRes = await fetch("/api/upload", { method: "POST", body: formData })
-    // const { urls } = await uploadRes.json()
-    // const { data, error } = await supabase.from("properties").insert({ ...form, status: "pending_review" })
+    // 1. Kreye pwopriyete a nan Supabase
+    const result = await createProperty(form);
 
-    await new Promise((r) => setTimeout(r, 1200));
+    if (result.error) {
+      setError(result.error);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Upload foto sou R2 (si gen foto)
+    if (photos.length > 0 && result.id) {
+      const fd = new FormData();
+      fd.append("property_id", result.id);
+      photos.forEach((file) => fd.append("files", file));
+
+      try {
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: fd });
+        const uploadData = await uploadRes.json();
+        if (uploadData.error) {
+          console.warn("Upload foto echèk:", uploadData.error);
+        }
+      } catch (err) {
+        console.warn("Upload foto echèk:", err);
+      }
+    }
+
     router.push("/dashboard?success=listing_created");
   }
 

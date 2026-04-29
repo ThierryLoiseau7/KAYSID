@@ -219,7 +219,7 @@ export const MOCK_PROPERTIES: Property[] = [
     longitude: -74.1151,
     created_at: "2024-06-05T11:00:00Z",
     updated_at: "2024-06-05T11:00:00Z",
-    location: { id: 25, department: "Nippes", commune: "Jeremi", neighborhood: "Vil" },
+    location: { id: 25, department: "Grand Anz", commune: "Jeremi", neighborhood: "Vil" },
     photos: [
       { id: 10, property_id: "prop-005", url: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800&q=80", is_cover: true, display_order: 0 },
     ],
@@ -345,8 +345,20 @@ export function getMockProperties(filters?: {
   min_price?: number;
   max_price?: number;
   bedrooms?: number;
+  q?: string;
 }): Property[] {
   let results = [...MOCK_PROPERTIES];
+
+  if (filters?.q) {
+    const q = filters.q.toLowerCase();
+    results = results.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q) ||
+        p.location?.commune?.toLowerCase().includes(q) ||
+        p.location?.neighborhood?.toLowerCase().includes(q)
+    );
+  }
 
   if (filters?.commune) {
     results = results.filter((p) => p.location?.commune === filters.commune);

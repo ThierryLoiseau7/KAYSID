@@ -19,15 +19,20 @@ interface Props {
   page: number;
   totalPages: number;
   view: "list" | "grid";
-  buildPageUrl: (p: number) => string;
   params: Record<string, string | undefined>;
 }
 
 export default function ListingsContent({
-  paginated, total, page, totalPages, view, buildPageUrl, params,
+  paginated, total, page, totalPages, view, params,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  function buildPageUrl(p: number) {
+    const q = new URLSearchParams(searchParams.toString());
+    q.set("page", String(p));
+    return `/listings?${q.toString()}`;
+  }
 
   function setView(v: "list" | "grid") {
     const q = new URLSearchParams(searchParams.toString());

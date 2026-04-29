@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { PlusCircle, Edit, Eye, Trash2, MoreVertical } from "lucide-react";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
+import { PlusCircle, Edit, Eye } from "lucide-react";
 import { formatPrice, getPropertyTypeLabel, getCoverPhoto } from "@/lib/utils";
 import Image from "next/image";
-
-const MY_PROPERTIES = MOCK_PROPERTIES.filter((p) => p.owner_id === "u-001");
+import { createClient } from "@/lib/supabase/server";
+import { getUserProperties } from "@/lib/supabase/queries";
+import DeletePropertyButton from "@/components/dashboard/DeletePropertyButton";
 
 const STATUS_COLORS: Record<string, string> = {
   active:         "bg-green-100 text-green-700",
@@ -21,7 +21,10 @@ const STATUS_LABELS: Record<string, string> = {
   suspended:      "Sipann",
 };
 
-export default function PropertiesPage() {
+export default async function PropertiesPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const MY_PROPERTIES = user ? await getUserProperties(user.id) : [];
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -113,12 +116,7 @@ export default function PropertiesPage() {
                   >
                     <Edit className="w-4 h-4" />
                   </Link>
-                  <button
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
-                    title="Efase"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <DeletePropertyButton id={p.id} />
                 </div>
               </div>
             );

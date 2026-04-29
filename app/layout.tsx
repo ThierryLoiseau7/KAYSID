@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -41,7 +42,9 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className="min-h-screen flex flex-col">
-        <Navbar />
+        <Suspense fallback={<div className="h-[92px] bg-white border-b border-slate-200 shadow-sm" />}>
+          <Navbar />
+        </Suspense>
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
         <div className="hidden md:block"><Footer /></div>
         <MobileBottomNav />

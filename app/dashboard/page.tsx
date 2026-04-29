@@ -1,44 +1,8 @@
 import Link from "next/link";
 import { Eye, MessageCircle, Building2, TrendingUp, PlusCircle, ChevronRight, BadgeCheck } from "lucide-react";
 import PropertyCard from "@/components/properties/PropertyCard";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
-
-const MY_PROPERTIES = MOCK_PROPERTIES.filter((p) => p.owner_id === "u-001");
-
-const STATS = [
-  {
-    label: "Anons Aktif",
-    value: MY_PROPERTIES.filter((p) => p.status === "active").length,
-    icon: Building2,
-    color: "bg-caribbean-50 text-caribbean-700",
-    trend: "+2 mwa sa",
-  },
-  {
-    label: "Total Vizit",
-    value: MY_PROPERTIES.reduce((s, p) => s + p.view_count, 0).toLocaleString(),
-    icon: Eye,
-    color: "bg-blue-50 text-blue-700",
-    trend: "+18% semèn sa",
-  },
-  {
-    label: "Kontakt Resevwa",
-    value: MY_PROPERTIES.reduce((s, p) => s + p.contact_count, 0),
-    icon: MessageCircle,
-    color: "bg-green-50 text-green-700",
-    trend: "+5 jou sa",
-  },
-  {
-    label: "Ti Pousantaj Kontak",
-    value: `${Math.round(
-      (MY_PROPERTIES.reduce((s, p) => s + p.contact_count, 0) /
-        Math.max(MY_PROPERTIES.reduce((s, p) => s + p.view_count, 0), 1)) *
-        100
-    )}%`,
-    icon: TrendingUp,
-    color: "bg-purple-50 text-purple-700",
-    trend: "Bon rezilta",
-  },
-];
+import { createClient } from "@/lib/supabase/server";
+import { getUserProperties } from "@/lib/supabase/queries";
 
 const STATUS_COLORS: Record<string, string> = {
   active:         "bg-green-100 text-green-700",
@@ -56,14 +20,58 @@ const STATUS_LABELS: Record<string, string> = {
   suspended:      "Sipann",
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("full_name").eq("id", user.id).single()
+    : { data: null };
+
+  const MY_PROPERTIES = user ? await getUserProperties(user.id) : [];
+  const userName = profile?.full_name || user?.email?.split("@")[0] || "Itilizatè";
+
+  const STATS = [
+    {
+      label: "Anons Aktif",
+      value: MY_PROPERTIES.filter((p) => p.status === "active").length,
+      icon: Building2,
+      color: "bg-caribbean-50 text-caribbean-700",
+      trend: "Anons ou yo",
+    },
+    {
+      label: "Total Vizit",
+      value: MY_PROPERTIES.reduce((s, p) => s + p.view_count, 0).toLocaleString(),
+      icon: Eye,
+      color: "bg-blue-50 text-blue-700",
+      trend: "Kumulatif",
+    },
+    {
+      label: "Kontakt Resevwa",
+      value: MY_PROPERTIES.reduce((s, p) => s + p.contact_count, 0),
+      icon: MessageCircle,
+      color: "bg-green-50 text-green-700",
+      trend: "Kumulatif",
+    },
+    {
+      label: "Ti Pousantaj Kontak",
+      value: `${Math.round(
+        (MY_PROPERTIES.reduce((s, p) => s + p.contact_count, 0) /
+          Math.max(MY_PROPERTIES.reduce((s, p) => s + p.view_count, 0), 1)) *
+          100
+      )}%`,
+      icon: TrendingUp,
+      color: "bg-purple-50 text-purple-700",
+      trend: "Bon rezilta",
+    },
+  ];
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Tableau de Bò</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Bonjou, Jean Baptiste 👋</p>
+          <p className="text-slate-500 text-sm mt-0.5">Bonjou, {userName} 👋</p>
         </div>
         <Link href="/dashboard/new-listing" className="btn-primary text-sm">
           <PlusCircle className="w-4 h-4" />

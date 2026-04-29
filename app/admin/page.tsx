@@ -1,20 +1,22 @@
 import { Shield, Clock, CheckCircle, XCircle, Flag, Users, Eye } from "lucide-react";
-import { MOCK_PROPERTIES, MOCK_USERS } from "@/lib/mock-data";
+import { getAdminProperties } from "@/lib/supabase/queries";
+import { approveProperty, rejectProperty } from "@/app/actions/properties";
 import { formatPrice, getPropertyTypeLabel, getCoverPhoto, timeAgo } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
-const PENDING = MOCK_PROPERTIES.filter((p) => p.status === "pending_review");
-const ACTIVE  = MOCK_PROPERTIES.filter((p) => p.status === "active");
+export default async function AdminPage() {
+  const [PENDING, ACTIVE] = await Promise.all([
+    getAdminProperties("pending_review"),
+    getAdminProperties("active"),
+  ]);
 
-const ADMIN_STATS = [
-  { label: "Ap Tann Revizyon", value: PENDING.length,        icon: Clock,         color: "bg-yellow-900/50 text-yellow-400 border-yellow-800" },
-  { label: "Anons Aktif",      value: ACTIVE.length,         icon: CheckCircle,   color: "bg-green-900/50 text-green-400 border-green-800"    },
-  { label: "Itilizatè Total",  value: MOCK_USERS.length,     icon: Users,         color: "bg-blue-900/50 text-blue-400 border-blue-800"       },
-  { label: "Rapò Ouvri",       value: 3,                     icon: Flag,          color: "bg-red-900/50 text-red-400 border-red-800"          },
-];
-
-export default function AdminPage() {
+  const ADMIN_STATS = [
+    { label: "Ap Tann Revizyon", value: PENDING.length, icon: Clock,       color: "bg-yellow-900/50 text-yellow-400 border-yellow-800" },
+    { label: "Anons Aktif",      value: ACTIVE.length,  icon: CheckCircle, color: "bg-green-900/50 text-green-400 border-green-800"    },
+    { label: "Itilizatè Total",  value: "—",            icon: Users,       color: "bg-blue-900/50 text-blue-400 border-blue-800"       },
+    { label: "Rapò Ouvri",       value: 0,              icon: Flag,        color: "bg-red-900/50 text-red-400 border-red-800"          },
+  ];
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-3">
@@ -84,12 +86,16 @@ export default function AdminPage() {
                   >
                     <Eye className="w-4 h-4" />
                   </Link>
-                  <button className="w-9 h-9 bg-green-700 hover:bg-green-600 rounded-xl flex items-center justify-center text-white transition-all" title="Apwouve">
-                    <CheckCircle className="w-4 h-4" />
-                  </button>
-                  <button className="w-9 h-9 bg-red-800 hover:bg-red-700 rounded-xl flex items-center justify-center text-white transition-all" title="Rejte">
-                    <XCircle className="w-4 h-4" />
-                  </button>
+                  <form action={approveProperty.bind(null, p.id)}>
+                    <button type="submit" className="w-9 h-9 bg-green-700 hover:bg-green-600 rounded-xl flex items-center justify-center text-white transition-all" title="Apwouve">
+                      <CheckCircle className="w-4 h-4" />
+                    </button>
+                  </form>
+                  <form action={rejectProperty.bind(null, p.id)}>
+                    <button type="submit" className="w-9 h-9 bg-red-800 hover:bg-red-700 rounded-xl flex items-center justify-center text-white transition-all" title="Rejte">
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  </form>
                 </div>
               </div>
             ))}
@@ -131,9 +137,11 @@ export default function AdminPage() {
                       >
                         Wè
                       </Link>
-                      <button className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
-                        Sipann
-                      </button>
+                      <form action={rejectProperty.bind(null, p.id)}>
+                        <button type="submit" className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
+                          Sipann
+                        </button>
+                      </form>
                     </div>
                   </td>
                 </tr>

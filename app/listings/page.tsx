@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import SearchFilters from "@/components/search/SearchFilters";
 import ListingsContent from "@/components/search/ListingsContent";
-import { getMockProperties } from "@/lib/mock-data";
+import { getProperties } from "@/lib/supabase/queries";
 import type { PropertyType, ListingType } from "@/types";
 
 export const metadata: Metadata = {
@@ -24,6 +24,7 @@ interface ListingsPageProps {
     furnished?: string;
     page?: string;
     view?: string;
+    q?: string;
   }>;
 }
 
@@ -38,26 +39,15 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     min_price: params.min_price ? Number(params.min_price) : undefined,
     max_price: params.max_price ? Number(params.max_price) : undefined,
     bedrooms: params.bedrooms ? Number(params.bedrooms) : undefined,
+    q: params.q,
   };
 
-  const properties = getMockProperties(filters);
   const page = Number(params.page ?? 1);
   const perPage = 15;
-  const total = properties.length;
-  const paginated = properties.slice((page - 1) * perPage, page * perPage);
-  const totalPages = Math.ceil(total / perPage);
+  const { data: paginated, count: total } = await getProperties(filters, page, perPage);
+  const totalPages = Math.ceil((total ?? 0) / perPage);
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
   const view = (params.view ?? "list") as "list" | "grid";
-
-  function buildPageUrl(p: number) {
-    const q = new URLSearchParams(
-      Object.fromEntries(
-        Object.entries(params).filter(([, v]) => v !== undefined)
-      ) as Record<string, string>
-    );
-    q.set("page", String(p));
-    return `/listings?${q.toString()}`;
-  }
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -99,7 +89,6 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
               page={page}
               totalPages={totalPages}
               view={view}
-              buildPageUrl={buildPageUrl}
               params={params}
             />
           </Suspense>

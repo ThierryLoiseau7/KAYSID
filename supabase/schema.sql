@@ -244,8 +244,9 @@ CREATE INDEX idx_reports_property      ON reports(property_id) WHERE status = 'o
 -- Profiles
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "profiles_select_own"   ON profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "profiles_update_own"   ON profiles FOR UPDATE USING (auth.uid() = id);
+-- Nenpòt moun ka wè pwofil piblik (non, avatar, whatsapp) pou anons yo
+CREATE POLICY "profiles_select_public" ON profiles FOR SELECT USING (true);
+CREATE POLICY "profiles_update_own"    ON profiles FOR UPDATE USING (auth.uid() = id);
 
 -- Pwopriyete
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;

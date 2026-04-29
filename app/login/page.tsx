@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Home, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,13 +20,17 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    // TODO: konekte ak Supabase auth
-    // const { error } = await supabase.auth.signInWithPassword({ email, password })
-    // if (error) { setError(error.message); setLoading(false); return; }
-
-    // Mock login pou demo
-    await new Promise((r) => setTimeout(r, 800));
-    router.push("/dashboard");
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      console.error("Login error:", error.message);
+      setError(error.message === "Invalid login credentials"
+        ? "Email oswa modpas pa kòrèk."
+        : error.message);
+      setLoading(false);
+      return;
+    }
+    window.location.href = "/dashboard";
   }
 
   async function handleMagicLink() {
@@ -36,8 +41,16 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    // TODO: const { error } = await supabase.auth.signInWithOtp({ email })
-    await new Promise((r) => setTimeout(r, 800));
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+    });
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
     setMagicSent(true);
     setLoading(false);
   }
