@@ -12,14 +12,14 @@ import { COMMUNES } from "@/lib/constants";
 import type { Property } from "@/types";
 
 const CATEGORIES = [
-  { label: "Chanbrèt",  icon: DoorOpen,   href: "/listings?property_type=chambrette", color: "bg-violet-50 text-violet-700" },
-  { label: "Studio",    icon: Building,   href: "/listings?property_type=studio",      color: "bg-blue-50 text-blue-700"    },
-  { label: "Apatman",   icon: Layers,     href: "/listings?property_type=appartement", color: "bg-sky-50 text-sky-700"      },
-  { label: "2 Chanm",   icon: BedDouble,  href: "/listings?property_type=kay_2_chanm", color: "bg-teal-50 text-teal-700"   },
-  { label: "3 Chanm+",  icon: Home,       href: "/listings?property_type=kay_3_chanm", color: "bg-caribbean-50 text-caribbean-700" },
-  { label: "Villa",     icon: Castle,     href: "/listings?property_type=villa",        color: "bg-amber-50 text-amber-700"  },
-  { label: "Terin",     icon: Landmark,   href: "/listings?property_type=te",           color: "bg-green-50 text-green-700"  },
-  { label: "Tout Tip",  icon: Trees,      href: "/listings",                            color: "bg-slate-100 text-slate-700" },
+  { label: "Chanbrèt",  icon: DoorOpen,  href: "/listings?property_type=chambrette" },
+  { label: "Studio",    icon: Building,  href: "/listings?property_type=studio"      },
+  { label: "Apatman",   icon: Layers,    href: "/listings?property_type=appartement" },
+  { label: "2 Chanm",   icon: BedDouble, href: "/listings?property_type=kay_2_chanm" },
+  { label: "3 Chanm+",  icon: Home,      href: "/listings?property_type=kay_3_chanm" },
+  { label: "Villa",     icon: Castle,    href: "/listings?property_type=villa"        },
+  { label: "Terin",     icon: Landmark,  href: "/listings?property_type=te"           },
+  { label: "Tout Tip",  icon: Trees,     href: "/listings"                            },
 ];
 
 const COMMUNES_FEATURED = [
@@ -85,19 +85,20 @@ export default function HomeClient({ recentProperties }: Props) {
             </button>
           </div>
 
-          {/* Quick chips */}
-          <div className="flex flex-wrap gap-2 mt-3">
+          {/* Popular searches */}
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 mt-3">
+            <span className="text-white/40 text-xs font-medium shrink-0 uppercase tracking-wide">Popilè:</span>
             {[
-              { label: "Studio Okay",           params: "commune=Okay&property_type=studio" },
-              { label: "Bò Lanmè Port-Salut",   params: "commune=Port-Salut" },
-              { label: "Jakmèl Lwaye",          params: "commune=Jakmèl&listing_type=rent" },
-              { label: "Terin pou Vann",        params: "property_type=te&listing_type=sale" },
+              { label: "Studio Okay",         params: "commune=Okay&property_type=studio" },
+              { label: "Bò Lanmè Port-Salut", params: "commune=Port-Salut" },
+              { label: "Jakmèl Lwaye",        params: "commune=Jakmèl&listing_type=rent" },
+              { label: "Terin pou Vann",      params: "property_type=te&listing_type=sale" },
             ].map(({ label, params }) => (
               <button
                 key={label}
                 type="button"
                 onClick={() => router.push(`/listings?${params}`)}
-                className="px-3 py-1 bg-white/15 hover:bg-white/25 border border-white/30 text-white text-xs font-medium rounded-full transition-all"
+                className="text-white/75 hover:text-white text-xs font-medium transition-colors underline underline-offset-2 decoration-white/30 hover:decoration-white/70"
               >
                 {label}
               </button>
@@ -106,41 +107,35 @@ export default function HomeClient({ recentProperties }: Props) {
         </form>
       </div>
 
-      {/* ── Categories Grid ── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <h2 className="text-base font-bold text-slate-800 mb-4">
-          Chèche pa Kategori
-        </h2>
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
-          {CATEGORIES.map(({ label, icon: Icon, href, color }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl border border-slate-200 hover:border-caribbean-400 hover:shadow-sm transition-all group"
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color} group-hover:scale-110 transition-transform`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-medium text-slate-700 text-center leading-tight">
+      {/* ── Categories Strip ── */}
+      <section className="bg-white border-b border-slate-200">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="flex overflow-x-auto gap-0 no-scrollbar -mb-px">
+            {CATEGORIES.map(({ label, href }) => (
+              <Link
+                key={href}
+                href={href}
+                className="px-5 py-3.5 text-sm font-medium text-slate-600 hover:text-caribbean-700 border-b-2 border-transparent hover:border-caribbean-600 whitespace-nowrap transition-colors shrink-0"
+              >
                 {label}
-              </span>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── Type tabs ── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 -mt-2 mb-6">
-        <div className="flex gap-2">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 mb-4">
+        <div className="flex items-center gap-1 border-b border-slate-200">
           {[
-            { label: "Tout", href: "/listings" },
-            { label: "Pou Lwaye", href: "/listings?listing_type=rent" },
-            { label: "Pou Vann", href: "/listings?listing_type=sale" },
+            { label: "Tout Anons", href: "/listings" },
+            { label: "Pou Lwaye",  href: "/listings?listing_type=rent" },
+            { label: "Pou Vann",   href: "/listings?listing_type=sale" },
           ].map(({ label, href }) => (
             <Link
               key={href}
               href={href}
-              className="px-4 py-1.5 text-sm font-semibold rounded-full border border-slate-200 bg-white text-slate-700 hover:border-caribbean-500 hover:text-caribbean-700 transition-all"
+              className="px-4 py-2.5 text-sm font-semibold text-slate-500 hover:text-caribbean-700 border-b-2 border-transparent hover:border-caribbean-600 -mb-px transition-colors whitespace-nowrap"
             >
               {label}
             </Link>

@@ -51,6 +51,10 @@
   @apply bg-slate-300 rounded-full;
 }
 
+/* Hide scrollbar (categories strip, etc.) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* Photo gallery swipe on mobile */
 .photo-gallery {
   scroll-snap-type: x mandatory;
