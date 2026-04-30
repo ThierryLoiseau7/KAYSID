@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { PlusCircle, Edit, Eye } from "lucide-react";
 import { formatPrice, getPropertyTypeLabel, getCoverPhoto } from "@/lib/utils";

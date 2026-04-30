@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Shield, Clock, CheckCircle, XCircle, Flag, Users, Eye } from "lucide-react";
 import { getAdminProperties } from "@/lib/supabase/queries";
 import type { Property } from "@/types";

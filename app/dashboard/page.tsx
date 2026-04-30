@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { Eye, MessageCircle, Building2, TrendingUp, PlusCircle, ChevronRight, BadgeCheck } from "lucide-react";
 import PropertyCard from "@/components/properties/PropertyCard";
