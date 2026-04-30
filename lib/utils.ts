@@ -41,7 +41,7 @@ export function getCoverPhoto(property: Property): string {
   const cover = property.photos?.find((p) => p.is_cover);
   if (cover) return cover.url;
   if (property.photos && property.photos.length > 0) return property.photos[0].url;
-  return "/placeholder-property.jpg";
+  return "/placeholder-property.svg";
 }
 
 export function timeAgo(dateStr: string): string {

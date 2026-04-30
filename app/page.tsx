@@ -1,8 +1,9 @@
 import { getRecentProperties } from "@/lib/supabase/queries";
 import HomeClient from "@/components/home/HomeClient";
+import type { Property } from "@/types";
 
 export default async function HomePage() {
-  let recentProperties = [];
+  let recentProperties: Property[] = [];
   try {
     recentProperties = await getRecentProperties(8);
   } catch {
