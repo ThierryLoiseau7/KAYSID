@@ -1,15 +1,22 @@
 import { Shield, Clock, CheckCircle, XCircle, Flag, Users, Eye } from "lucide-react";
 import { getAdminProperties } from "@/lib/supabase/queries";
+import type { Property } from "@/types";
 import { approveProperty, rejectProperty } from "@/app/actions/properties";
 import { formatPrice, getPropertyTypeLabel, getCoverPhoto, timeAgo } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
 export default async function AdminPage() {
-  const [PENDING, ACTIVE] = await Promise.all([
-    getAdminProperties("pending_review"),
-    getAdminProperties("active"),
-  ]);
+  let PENDING: Property[] = [];
+  let ACTIVE: Property[] = [];
+  try {
+    [PENDING, ACTIVE] = await Promise.all([
+      getAdminProperties("pending_review"),
+      getAdminProperties("active"),
+    ]);
+  } catch {
+    // Supabase pa konfigure — montre panel vid
+  }
 
   const ADMIN_STATS = [
     { label: "Ap Tann Revizyon", value: PENDING.length, icon: Clock,       color: "bg-yellow-900/50 text-yellow-400 border-yellow-800" },
