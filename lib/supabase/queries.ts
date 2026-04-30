@@ -19,12 +19,22 @@ const PROPERTY_SELECT = `
   owner:profiles!owner_id(id, full_name, avatar_url, role, is_verified, whatsapp)
 `;
 
+// Helper: kreye client san kraze si env vars manke
+async function getClient() {
+  try {
+    return await createClient();
+  } catch {
+    return null;
+  }
+}
+
 export async function getProperties(
   filters?: PropertyFilters,
   page = 1,
   perPage = 15
 ): Promise<{ data: Property[]; count: number }> {
-  const supabase = await createClient();
+  const supabase = await getClient();
+  if (!supabase) return { data: [], count: 0 };
 
   // Filtre pa komin/katye via location_id
   let locationIds: number[] | null = null;
@@ -69,7 +79,8 @@ export async function getProperties(
 }
 
 export async function getPropertyById(id: string): Promise<Property | null> {
-  const supabase = await createClient();
+  const supabase = await getClient();
+  if (!supabase) return null;
 
   const { data, error } = await supabase
     .from('properties')
@@ -82,7 +93,8 @@ export async function getPropertyById(id: string): Promise<Property | null> {
 }
 
 export async function getSimilarProperties(propertyId: string, commune: string): Promise<Property[]> {
-  const supabase = await createClient();
+  const supabase = await getClient();
+  if (!supabase) return [];
 
   const { data: locs } = await supabase.from('locations').select('id').eq('commune', commune);
   if (!locs?.length) return [];
@@ -100,7 +112,8 @@ export async function getSimilarProperties(propertyId: string, commune: string):
 }
 
 export async function getUserProperties(userId: string): Promise<Property[]> {
-  const supabase = await createClient();
+  const supabase = await getClient();
+  if (!supabase) return [];
 
   const { data, error } = await supabase
     .from('properties')
@@ -113,7 +126,8 @@ export async function getUserProperties(userId: string): Promise<Property[]> {
 }
 
 export async function getPropertyForEdit(id: string, userId: string): Promise<Property | null> {
-  const supabase = await createClient();
+  const supabase = await getClient();
+  if (!supabase) return null;
 
   const { data, error } = await supabase
     .from('properties')
@@ -128,23 +142,28 @@ export async function getPropertyForEdit(id: string, userId: string): Promise<Pr
 
 export async function getAdminProperties(status?: string): Promise<Property[]> {
   // Utilise service role pou bypasse RLS — admin wè tout pwopriyete
-  const { createAdminClient } = await import('./admin');
-  const supabase = createAdminClient();
+  try {
+    const { createAdminClient } = await import('./admin');
+    const supabase = createAdminClient();
 
-  let query = supabase
-    .from('properties')
-    .select(PROPERTY_SELECT)
-    .order('created_at', { ascending: false });
+    let query = supabase
+      .from('properties')
+      .select(PROPERTY_SELECT)
+      .order('created_at', { ascending: false });
 
-  if (status) query = query.eq('status', status);
+    if (status) query = query.eq('status', status);
 
-  const { data, error } = await query;
-  if (error) return [];
-  return (data as Property[]) ?? [];
+    const { data, error } = await query;
+    if (error) return [];
+    return (data as Property[]) ?? [];
+  } catch {
+    return [];
+  }
 }
 
 export async function getRecentProperties(limit = 8): Promise<Property[]> {
-  const supabase = await createClient();
+  const supabase = await getClient();
+  if (!supabase) return [];
 
   const { data, error } = await supabase
     .from('properties')

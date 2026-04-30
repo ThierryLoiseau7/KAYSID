@@ -24,8 +24,14 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default async function PropertiesPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const supabase = await createClient();
+    const { data: authData } = await supabase.auth.getUser();
+    user = authData.user;
+  } catch {
+    // Supabase pa konfigure
+  }
   const MY_PROPERTIES = user ? await getUserProperties(user.id) : [];
   return (
     <div className="space-y-6">

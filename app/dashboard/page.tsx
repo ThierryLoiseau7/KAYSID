@@ -23,11 +23,20 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = user
-    ? await supabase.from("profiles").select("full_name").eq("id", user.id).single()
-    : { data: null };
+  let user = null;
+  let profile = null;
+  try {
+    const supabase = await createClient();
+    const { data: authData } = await supabase.auth.getUser();
+    user = authData.user;
+    if (user) {
+      const { data } = await supabase
+        .from("profiles").select("full_name").eq("id", user.id).single();
+      profile = data;
+    }
+  } catch {
+    // Supabase pa konfigure
+  }
 
   const MY_PROPERTIES = user ? await getUserProperties(user.id) : [];
   const userName = profile?.full_name || user?.email?.split("@")[0] || "Itilizatè";

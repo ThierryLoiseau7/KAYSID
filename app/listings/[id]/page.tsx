@@ -19,18 +19,27 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const property = await getPropertyById(id);
-  if (!property) return { title: "Pa Jwenn" };
-  return {
-    title: property.title,
-    description: property.description ?? `${getPropertyTypeLabel(property.property_type)} nan ${property.location?.commune}`,
-  };
+  try {
+    const { id } = await params;
+    const property = await getPropertyById(id);
+    if (!property) return { title: "Pa Jwenn" };
+    return {
+      title: property.title,
+      description: property.description ?? `${getPropertyTypeLabel(property.property_type)} nan ${property.location?.commune}`,
+    };
+  } catch {
+    return { title: "KaySid" };
+  }
 }
 
 export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params;
-  const property = await getPropertyById(id);
+  let property = null;
+  try {
+    property = await getPropertyById(id);
+  } catch {
+    notFound();
+  }
   if (!property) notFound();
 
   const whatsappUrl = property.owner?.whatsapp
