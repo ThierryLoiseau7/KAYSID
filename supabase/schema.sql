@@ -125,6 +125,10 @@ CREATE TRIGGER properties_updated_at
   BEFORE UPDATE ON properties
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+CREATE TRIGGER profiles_updated_at
+  BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
 -- =============================================================
 -- TABLE: property_photos
 -- =============================================================
@@ -132,7 +136,7 @@ CREATE TABLE property_photos (
   id              SERIAL PRIMARY KEY,
   property_id     UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
   url             TEXT NOT NULL,
-  cloudinary_id   TEXT,
+  r2_key          TEXT,                -- Cloudflare R2 object key
   is_cover        BOOLEAN NOT NULL DEFAULT false,
   display_order   SMALLINT NOT NULL DEFAULT 0,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -266,12 +270,8 @@ CREATE POLICY "properties_insert_auth"
 CREATE POLICY "properties_update_own"
   ON properties FOR UPDATE
   USING (auth.uid() = owner_id)
-  WITH CHECK (
-    -- Yon mèt kay pa ka chanje statik li menm — sèlman admin
-    (status = (SELECT status FROM properties WHERE id = properties.id))
-    OR
-    (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'))
-  );
+  WITH CHECK (auth.uid() = owner_id);
+  -- Admin yo itilize service role key (bypasse RLS) — pa bezwen verifye la
 
 CREATE POLICY "properties_delete_own"
   ON properties FOR DELETE
