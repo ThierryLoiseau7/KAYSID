@@ -23,10 +23,10 @@ const CATEGORIES = [
 ];
 
 const COMMUNES_FEATURED = [
-  { name: "Okay",       count: "420+", image: "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=400&q=80" },
-  { name: "Jakmèl",     count: "280+", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80" },
-  { name: "Port-Salut", count: "95+",  image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80" },
-  { name: "Jeremi",     count: "130+", image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80" },
+  { name: "Okay",       slug: "okay",       tagline: "Kapital Sid",     image: "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=400&q=80" },
+  { name: "Jakmèl",     slug: "jakmel",     tagline: "Vil Powèt",       image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80" },
+  { name: "Port-Salut", slug: "port-salut", tagline: "Paradi Plaj",     image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80" },
+  { name: "Jeremi",     slug: "jeremi",     tagline: "Gran Anz",        image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80" },
 ];
 
 interface Props {
@@ -180,10 +180,10 @@ export default function HomeClient({ recentProperties }: Props) {
           Eksplore pa Komin
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {COMMUNES_FEATURED.map(({ name, count, image }) => (
+          {COMMUNES_FEATURED.map(({ name, slug, tagline, image }) => (
             <Link
-              key={name}
-              href={`/listings?commune=${encodeURIComponent(name)}`}
+              key={slug}
+              href={`/communes/${slug}`}
               className="relative overflow-hidden rounded-xl aspect-[4/3] group"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -192,10 +192,10 @@ export default function HomeClient({ recentProperties }: Props) {
                 alt={name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
               <div className="absolute bottom-0 left-0 p-3">
                 <p className="font-bold text-white text-sm leading-tight">{name}</p>
-                <p className="text-white/80 text-xs">{count} anons</p>
+                <p className="text-white/70 text-xs">{tagline}</p>
               </div>
             </Link>
           ))}
