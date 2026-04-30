@@ -172,20 +172,19 @@ export async function deleteProperty(id: string): Promise<{ error?: string }> {
 }
 
 export async function approveProperty(id: string): Promise<void> {
+  // Verifye admin via session
   const supabase = await createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
   const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
+    .from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "admin") return;
 
-  await supabase
+  // Operasyon via service role (bypass RLS)
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createAdminClient();
+  await admin
     .from("properties")
     .update({ status: "active", updated_at: new Date().toISOString() })
     .eq("id", id);
@@ -196,19 +195,16 @@ export async function approveProperty(id: string): Promise<void> {
 
 export async function rejectProperty(id: string): Promise<void> {
   const supabase = await createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
   const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
+    .from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "admin") return;
 
-  await supabase
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createAdminClient();
+  await admin
     .from("properties")
     .update({ status: "suspended", updated_at: new Date().toISOString() })
     .eq("id", id);

@@ -2,10 +2,11 @@ import Link from "next/link";
 import { Shield, LayoutDashboard, Building2, Users, Flag, LogOut } from "lucide-react";
 
 const NAV = [
-  { href: "/admin",           label: "Apèsi",     icon: LayoutDashboard },
-  { href: "/admin/listings",  label: "Anons",     icon: Building2       },
-  { href: "/admin/users",     label: "Itilizatè", icon: Users           },
-  { href: "/admin/reports",   label: "Rapò",      icon: Flag            },
+  { href: "/admin", label: "Apèsi", icon: LayoutDashboard },
+  // TODO: kreye paj sa yo
+  // { href: "/admin/listings", label: "Anons",     icon: Building2 },
+  // { href: "/admin/users",    label: "Itilizatè", icon: Users     },
+  // { href: "/admin/reports",  label: "Rapò",      icon: Flag      },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

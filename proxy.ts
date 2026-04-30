@@ -42,8 +42,20 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/dashboard") && !user) {
     return NextResponse.redirect(new URL("/login?redirect=/dashboard", request.url));
   }
-  if (pathname.startsWith("/admin") && !user) {
-    return NextResponse.redirect(new URL("/login?redirect=/admin", request.url));
+
+  if (pathname.startsWith("/admin")) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/login?redirect=/admin", request.url));
+    }
+    // Verifye role admin — pa kite user òdinè antre
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (profile?.role !== "admin") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
   return supabaseResponse;

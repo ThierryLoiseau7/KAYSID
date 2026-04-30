@@ -20,13 +20,18 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      console.error("Login error:", error.message);
-      setError(error.message === "Invalid login credentials"
-        ? "Email oswa modpas pa kòrèk."
-        : error.message);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setError(error.message === "Invalid login credentials"
+          ? "Email oswa modpas pa kòrèk."
+          : error.message);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      setError("Sèvis otantifikasyon pa disponib. Eseye ankò.");
       setLoading(false);
       return;
     }
@@ -41,13 +46,19 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-    });
-    if (error) {
-      setError(error.message);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      });
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      setError("Sèvis otantifikasyon pa disponib. Eseye ankò.");
       setLoading(false);
       return;
     }

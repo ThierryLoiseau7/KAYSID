@@ -50,7 +50,14 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
-    const supabase = createClient();
+    let supabase;
+    try {
+      supabase = createClient();
+    } catch {
+      setError("Sèvis otantifikasyon pa disponib. Eseye ankò.");
+      setLoading(false);
+      return;
+    }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -59,8 +66,6 @@ export default function RegisterPage() {
         emailRedirectTo: `${window.location.origin}/dashboard`,
       },
     });
-
-    console.log("signUp result:", { data, error });
 
     if (error) {
       console.error("signUp error:", error.message);

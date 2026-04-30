@@ -127,7 +127,9 @@ export async function getPropertyForEdit(id: string, userId: string): Promise<Pr
 }
 
 export async function getAdminProperties(status?: string): Promise<Property[]> {
-  const supabase = await createClient();
+  // Utilise service role pou bypasse RLS — admin wè tout pwopriyete
+  const { createAdminClient } = await import('./admin');
+  const supabase = createAdminClient();
 
   let query = supabase
     .from('properties')
