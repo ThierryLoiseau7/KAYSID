@@ -20,26 +20,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, role")
-        .eq("id", user.id)
-        .single();
-      if (profile) {
-        setUserName(profile.full_name || user.email?.split("@")[0] || "Itilizatè");
-        setUserRole(profile.role || "");
-      } else {
-        setUserName(user.email?.split("@")[0] || "Itilizatè");
-      }
-    });
+    try {
+      const supabase = createClient();
+      supabase.auth.getUser().then(async ({ data: { user } }) => {
+        if (!user) return;
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, role")
+          .eq("id", user.id)
+          .single();
+        if (profile) {
+          setUserName(profile.full_name || user.email?.split("@")[0] || "Itilizatè");
+          setUserRole(profile.role || "");
+        } else {
+          setUserName(user.email?.split("@")[0] || "Itilizatè");
+        }
+      });
+    } catch {
+      // Supabase pa konfigure
+    }
   }, []);
 
   async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {}
     router.push("/");
     router.refresh();
   }
