@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  MapPin, Users, Ruler, Building2, ChevronLeft, ExternalLink,
-  Landmark, Utensils, Music, Lightbulb, User, Star,
-} from "lucide-react";
+import { MapPin, ChevronLeft, ExternalLink } from "lucide-react";
 import { getCommuneBySlug, COMMUNE_SLUGS } from "@/lib/communes-data";
 import type { CommunePlace } from "@/lib/communes-data";
 
@@ -36,14 +33,22 @@ const PLACE_TYPE_LABELS: Record<CommunePlace["type"], string> = {
   natirèl:   "Nati",
 };
 
-const PLACE_TYPE_COLORS: Record<CommunePlace["type"], string> = {
-  plaj:      "bg-blue-50 text-blue-700 border-blue-200",
-  mòn:       "bg-green-50 text-green-700 border-green-200",
-  patrimwan: "bg-amber-50 text-amber-700 border-amber-200",
-  restoran:  "bg-orange-50 text-orange-700 border-orange-200",
-  mache:     "bg-purple-50 text-purple-700 border-purple-200",
-  natirèl:   "bg-teal-50 text-teal-700 border-teal-200",
+const PLACE_TYPE_STYLE: Record<CommunePlace["type"], { border: string; text: string }> = {
+  plaj:      { border: "border-l-blue-500",   text: "text-blue-600"   },
+  mòn:       { border: "border-l-green-600",  text: "text-green-700"  },
+  patrimwan: { border: "border-l-amber-500",  text: "text-amber-600"  },
+  restoran:  { border: "border-l-orange-500", text: "text-orange-600" },
+  mache:     { border: "border-l-purple-500", text: "text-purple-600" },
+  natirèl:   { border: "border-l-teal-500",   text: "text-teal-600"   },
 };
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-base font-bold text-slate-900 border-l-4 border-caribbean-500 pl-3 mb-6 leading-snug uppercase tracking-wide">
+      {children}
+    </h2>
+  );
+}
 
 export default async function CommunePage({ params }: Props) {
   const { slug } = await params;
@@ -54,7 +59,7 @@ export default async function CommunePage({ params }: Props) {
     <div className="bg-slate-50 min-h-screen">
 
       {/* ── Hero ── */}
-      <div className="relative h-72 sm:h-96 overflow-hidden">
+      <div className="relative h-72 sm:h-[420px] overflow-hidden">
         <Image
           src={commune.coverImage}
           alt={commune.name}
@@ -63,77 +68,80 @@ export default async function CommunePage({ params }: Props) {
           priority
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
-        {/* Breadcrumb */}
         <div className="absolute top-4 left-4 sm:top-6 sm:left-8">
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-white/80 hover:text-white text-sm transition-colors"
+            className="flex items-center gap-1.5 text-white/60 hover:text-white text-sm transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Retounen Akèy
           </Link>
         </div>
 
-        {/* Title */}
-        <div className="absolute bottom-6 left-4 sm:bottom-10 sm:left-8 right-4">
-          <p className="text-caribbean-300 text-sm font-semibold uppercase tracking-widest mb-1">
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-8 sm:px-8 sm:pb-10">
+          <p className="text-caribbean-400 text-[11px] font-bold uppercase tracking-[0.2em] mb-2">
             Depatman {commune.department}
           </p>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white leading-tight mb-2">
+          <h1 className="text-4xl sm:text-6xl font-black text-white leading-none tracking-tight mb-3">
             {commune.name}
           </h1>
-          <p className="text-white/80 text-base sm:text-lg">{commune.tagline}</p>
+          <p className="text-white/60 text-sm sm:text-base max-w-lg">{commune.tagline}</p>
         </div>
       </div>
 
-      {/* ── Quick Stats ── */}
+      {/* ── Stats strip ── */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-          {[
-            { icon: Users,    label: "Popilasyon",  value: commune.population },
-            { icon: Ruler,    label: "Sipèfisi",    value: commune.superficie },
-            { icon: MapPin,   label: "Altitid",     value: commune.altitude   },
-            { icon: Building2,label: "Depatman",    value: commune.department },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="py-2">
-              <Icon className="w-4 h-4 text-caribbean-600 mx-auto mb-1" />
-              <p className="text-lg font-bold text-slate-900">{value}</p>
-              <p className="text-xs text-slate-500">{label}</p>
-            </div>
-          ))}
+        <div className="max-w-5xl mx-auto px-4 sm:px-8">
+          <div className="flex divide-x divide-slate-200 py-5">
+            {[
+              { label: "Popilasyon",  value: commune.population },
+              { label: "Sipèfisi",    value: commune.superficie },
+              { label: "Altitid",     value: commune.altitude   },
+              { label: "Depatman",    value: commune.department },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex-1 px-4 first:pl-0 last:pr-0">
+                <p className="text-base sm:text-xl font-bold text-slate-900 leading-none">{value}</p>
+                <p className="text-[11px] text-slate-400 mt-1.5 uppercase tracking-wider">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-12">
 
         {/* ── CTA Anons ── */}
-        <div className="bg-gradient-to-r from-caribbean-700 to-caribbean-500 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-caribbean-700 px-6 py-5">
           <div>
-            <p className="text-white font-bold text-lg">Chèche Kay nan {commune.name}</p>
-            <p className="text-caribbean-100 text-sm mt-0.5">
-              Wè tout anons disponib — lwaye, vann, studio, villa
+            <p className="text-white font-bold text-base">Chèche Kay nan {commune.name}</p>
+            <p className="text-caribbean-300 text-sm mt-0.5">
+              Lwaye · Vann · Studio · Villa
             </p>
           </div>
           <Link
             href={`/listings?commune=${encodeURIComponent(commune.name.split(" ")[0])}`}
-            className="shrink-0 px-5 py-2.5 bg-white text-caribbean-700 font-bold text-sm rounded-xl hover:bg-caribbean-50 transition-all flex items-center gap-2"
+            className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-white text-caribbean-800 font-bold text-sm hover:bg-caribbean-50 transition-colors"
           >
             Wè Anons
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {/* ── Istwa ── */}
         <section>
-          <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-5">
-            <Landmark className="w-5 h-5 text-caribbean-600" />
-            Istwa {commune.name.split(" ")[0]}
-          </h2>
-          <div className="space-y-4">
+          <SectionTitle>Istwa {commune.name}</SectionTitle>
+          <div className="space-y-5">
             {commune.history.map((para, i) => (
-              <p key={i} className="text-slate-600 leading-relaxed text-sm sm:text-base">
+              <p
+                key={i}
+                className={
+                  i === 0
+                    ? "text-slate-800 leading-relaxed text-base sm:text-lg font-medium"
+                    : "text-slate-500 leading-relaxed text-sm sm:text-base"
+                }
+              >
                 {para}
               </p>
             ))}
@@ -142,190 +150,152 @@ export default async function CommunePage({ params }: Props) {
 
         {/* ── Kote pou Vizite ── */}
         <section>
-          <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-5">
-            <MapPin className="w-5 h-5 text-caribbean-600" />
-            Kote pou Vizite
-          </h2>
+          <SectionTitle>Kote pou Vizite</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {commune.places.map((place) => (
-              <div
-                key={place.name}
-                className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-caribbean-300 hover:shadow-sm transition-all"
-              >
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <h3 className="font-bold text-slate-900">{place.name}</h3>
-                  <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full border ${PLACE_TYPE_COLORS[place.type]}`}>
+            {commune.places.map((place) => {
+              const s = PLACE_TYPE_STYLE[place.type];
+              return (
+                <div
+                  key={place.name}
+                  className={`bg-white border border-slate-200 border-l-4 ${s.border} p-5 hover:shadow-sm transition-shadow`}
+                >
+                  <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${s.text}`}>
                     {PLACE_TYPE_LABELS[place.type]}
-                  </span>
+                  </p>
+                  <h3 className="font-bold text-slate-900 mb-2">{place.name}</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed">{place.description}</p>
                 </div>
-                <p className="text-slate-600 text-sm leading-relaxed">{place.description}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
         {/* ── Ofisyèl yo ── */}
         <section>
-          <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-5">
-            <User className="w-5 h-5 text-caribbean-600" />
-            Ofisyèl yo
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <SectionTitle>Ofisyèl yo</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-slate-200 border border-slate-200 overflow-hidden">
 
-            {/* Mayor aktiyèl */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5">
-              <p className="text-xs font-bold text-caribbean-700 uppercase tracking-wide mb-3">
-                Mayor Aktiyèl
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-caribbean-100 rounded-xl flex items-center justify-center">
-                  <User className="w-6 h-6 text-caribbean-700" />
-                </div>
-                <div>
-                  <p className="font-bold text-slate-900">{commune.currentMayor.name}</p>
-                  <p className="text-xs text-slate-500">{commune.currentMayor.period}</p>
-                  {commune.currentMayor.party && (
-                    <p className="text-xs text-slate-400">{commune.currentMayor.party}</p>
-                  )}
-                </div>
-              </div>
-
+            {/* Mayor */}
+            <div className="bg-white p-5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-caribbean-600 mb-4">Mayor Aktiyèl</p>
+              <p className="font-bold text-slate-900 text-sm">{commune.currentMayor.name}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{commune.currentMayor.period}</p>
+              {commune.currentMayor.party && (
+                <p className="text-xs text-slate-400">{commune.currentMayor.party}</p>
+              )}
               {commune.formerMayors.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <p className="text-xs font-semibold text-slate-500 mb-2">Ansyen Mayor yo</p>
-                  <ul className="space-y-1.5">
+                <div className="mt-5 pt-4 border-t border-slate-100">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Ansyen Mayor</p>
+                  <div className="space-y-2.5">
                     {commune.formerMayors.map((m) => (
-                      <li key={m.name} className="flex items-center justify-between text-xs">
-                        <span className="text-slate-700 font-medium">{m.name}</span>
-                        <span className="text-slate-400">{m.period}</span>
-                      </li>
+                      <div key={m.name} className="flex items-baseline justify-between gap-2">
+                        <span className="text-xs font-medium text-slate-700">{m.name}</span>
+                        <span className="text-[11px] text-slate-400 shrink-0">{m.period}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Depite + Senatè */}
-            <div className="space-y-4">
-              <div className="bg-white rounded-2xl border border-slate-200 p-5">
-                <p className="text-xs font-bold text-caribbean-700 uppercase tracking-wide mb-3">
-                  Depite / Senatè
-                </p>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
-                    <User className="w-6 h-6 text-slate-500" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900">{commune.currentDeputy.name}</p>
-                    <p className="text-xs text-slate-500">{commune.currentDeputy.title}</p>
-                    <p className="text-xs text-slate-400">{commune.currentDeputy.period}</p>
+            {/* Depite */}
+            <div className="bg-white p-5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-caribbean-600 mb-4">Depite Aktiyèl</p>
+              <p className="font-bold text-slate-900 text-sm">{commune.currentDeputy.name}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{commune.currentDeputy.title}</p>
+              <p className="text-xs text-slate-400">{commune.currentDeputy.period}</p>
+              {commune.formerDeputies.length > 0 && (
+                <div className="mt-5 pt-4 border-t border-slate-100">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Ansyen Depite</p>
+                  <div className="space-y-2.5">
+                    {commune.formerDeputies.map((d) => (
+                      <div key={d.name} className="flex items-baseline justify-between gap-2">
+                        <span className="text-xs font-medium text-slate-700">{d.name}</span>
+                        <span className="text-[11px] text-slate-400 shrink-0">{d.period}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                {commune.senator && (
-                  <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
-                    <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
-                      <User className="w-6 h-6 text-slate-500" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-900">{commune.senator.name}</p>
-                      <p className="text-xs text-slate-500">{commune.senator.title}</p>
-                      <p className="text-xs text-slate-400">{commune.senator.period}</p>
-                    </div>
-                  </div>
-                )}
-
-                {commune.formerDeputies.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-slate-100">
-                    <p className="text-xs font-semibold text-slate-500 mb-2">Ansyen Depite yo</p>
-                    <ul className="space-y-1.5">
-                      {commune.formerDeputies.map((d) => (
-                        <li key={d.name} className="flex items-center justify-between text-xs">
-                          <span className="text-slate-700 font-medium">{d.name}</span>
-                          <span className="text-slate-400">{d.period}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
+
+            {/* Senatè */}
+            {commune.senator ? (
+              <div className="bg-white p-5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-caribbean-600 mb-4">Senatè</p>
+                <p className="font-bold text-slate-900 text-sm">{commune.senator.name}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{commune.senator.title}</p>
+                <p className="text-xs text-slate-400">{commune.senator.period}</p>
+              </div>
+            ) : (
+              <div className="bg-white p-5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Senatè</p>
+                <p className="text-xs text-slate-400 italic">Enfòmasyon pa disponib</p>
+              </div>
+            )}
           </div>
         </section>
 
         {/* ── Ekonomi ── */}
         <section>
-          <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-4">
-            <Building2 className="w-5 h-5 text-caribbean-600" />
-            Ekonomi
-          </h2>
-          <ul className="space-y-2">
+          <SectionTitle>Ekonomi</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10">
             {commune.economy.map((item, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
-                <span className="w-1.5 h-1.5 bg-caribbean-500 rounded-full mt-2 shrink-0" />
-                {item}
-              </li>
+              <div key={i} className="flex items-start gap-3 py-3 border-b border-slate-100">
+                <span className="text-caribbean-500 font-bold text-sm shrink-0 mt-px leading-none">—</span>
+                <p className="text-sm text-slate-600 leading-snug">{item}</p>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
 
         {/* ── Gastronomik + Festival ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           <section>
-            <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-4">
-              <Utensils className="w-5 h-5 text-caribbean-600" />
-              Gastronomik
-            </h2>
-            <ul className="space-y-2">
+            <SectionTitle>Gastronomik</SectionTitle>
+            <div className="bg-white border border-slate-200 divide-y divide-slate-100">
               {commune.gastronomy.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-slate-600 bg-white rounded-xl border border-slate-100 px-4 py-3">
-                  <span className="text-base">🍽️</span>
-                  {item}
-                </li>
+                <div key={i} className="px-4 py-3 text-sm text-slate-700 leading-snug">{item}</div>
               ))}
-            </ul>
+            </div>
           </section>
 
           <section>
-            <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-4">
-              <Music className="w-5 h-5 text-caribbean-600" />
-              Festival ak Fèt
-            </h2>
-            <ul className="space-y-2">
+            <SectionTitle>Festival ak Fèt</SectionTitle>
+            <div className="bg-white border border-slate-200 divide-y divide-slate-100">
               {commune.festivals.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-slate-600 bg-white rounded-xl border border-slate-100 px-4 py-3">
-                  <span className="text-base">🎉</span>
-                  {item}
-                </li>
+                <div key={i} className="px-4 py-3 text-sm text-slate-700 leading-snug">{item}</div>
               ))}
-            </ul>
+            </div>
           </section>
         </div>
 
         {/* ── Facts ── */}
         <section>
-          <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-4">
-            <Lightbulb className="w-5 h-5 text-caribbean-600" />
-            Sa ou pa te konn
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <SectionTitle>Sa ou pa te konn</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {commune.facts.map((fact, i) => (
-              <div key={i} className="flex items-start gap-3 bg-white rounded-xl border border-slate-200 p-4">
-                <Star className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-sm text-slate-700">{fact}</p>
+              <div key={i} className="bg-white border border-slate-200 p-5">
+                <span className="text-4xl font-black text-slate-100 leading-none block mb-3 select-none tabular-nums">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <p className="text-sm text-slate-700 leading-relaxed">{fact}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* ── CTA bas ── */}
-        <div className="bg-slate-900 rounded-2xl p-6 text-center">
-          <p className="text-white font-bold text-lg mb-1">Ou vle viv nan {commune.name.split(" ")[0]}?</p>
-          <p className="text-slate-400 text-sm mb-4">
+        <div className="bg-slate-900 px-8 py-10 sm:px-12 sm:py-14 text-center">
+          <p className="text-white font-black text-2xl sm:text-4xl mb-2 tracking-tight leading-none">
+            Ou vle viv nan {commune.name.split(" ")[0]}?
+          </p>
+          <p className="text-slate-500 text-sm mb-7 mt-3">
             Wè tout pwopriyete disponib — lwaye, vann, kay, terin
           </p>
           <Link
             href={`/listings?commune=${encodeURIComponent(commune.name.split(" ")[0])}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-caribbean-600 hover:bg-caribbean-500 text-white font-bold rounded-xl transition-all"
+            className="inline-flex items-center gap-2 px-7 py-3.5 bg-caribbean-600 hover:bg-caribbean-500 text-white font-bold text-sm transition-colors"
           >
             <MapPin className="w-4 h-4" />
             Wè Anons nan {commune.name.split(" ")[0]}
