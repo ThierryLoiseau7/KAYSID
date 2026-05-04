@@ -1,7 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { logger } from "@/lib/logger";
 import { requireAuth, requireAdmin, handleGuardError } from "@/lib/auth/guards";
 import { PropertyFormSchema, UuidSchema } from "@/lib/validators/schemas";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -95,10 +96,14 @@ export async function createProperty(
     .select("id")
     .single();
 
-  if (error) return { error: error.message };
+  if (error) {
+    logger.error("createProperty DB insert failed", { message: error.message, userId: user.id });
+    return { error: error.message };
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/properties");
+  revalidateTag("properties", "default");
   return { id: data.id, moderation };
 }
 
@@ -156,11 +161,16 @@ export async function updateProperty(
     .eq("id", idParsed.data)
     .eq("owner_id", user.id); // ownership check côté DB
 
-  if (error) return { error: error.message };
+  if (error) {
+    logger.error("updateProperty DB update failed", { message: error.message, id, userId: user.id });
+    return { error: error.message };
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/properties");
   revalidatePath(`/listings/${id}`);
+  revalidateTag(`property-${idParsed.data}`, "default");
+  revalidateTag("properties", "default");
   return {};
 }
 
@@ -190,19 +200,24 @@ export async function deleteProperty(id: string): Promise<{ error?: string }> {
     .eq("id", idParsed.data)
     .eq("owner_id", user.id);
 
-  if (error) return { error: error.message };
+  if (error) {
+    logger.error("deleteProperty DB delete failed", { message: error.message, id, userId: user.id });
+    return { error: error.message };
+  }
 
   // Efase foto nan R2 an background (pa bloke si echèk)
   if (photos?.length) {
     const publicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? "";
     for (const photo of photos) {
       const key = photo.url.replace(`${publicUrl}/`, "");
-      deleteFromR2(key).catch(console.warn);
+      deleteFromR2(key).catch((e) => logger.warn("R2 delete failed", { key, message: String(e) }));
     }
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/properties");
+  revalidateTag(`property-${idParsed.data}`, "default");
+  revalidateTag("properties", "default");
   redirect("/dashboard/properties");
 }
 
@@ -225,6 +240,8 @@ export async function approveProperty(id: string): Promise<void> {
 
   revalidatePath("/admin");
   revalidatePath("/listings");
+  revalidateTag(`property-${id}`, "default");
+  revalidateTag("properties", "default");
 }
 
 export async function rejectProperty(id: string): Promise<void> {
@@ -244,4 +261,6 @@ export async function rejectProperty(id: string): Promise<void> {
 
   revalidatePath("/admin");
   revalidatePath("/listings");
+  revalidateTag(`property-${id}`, "default");
+  revalidateTag("properties", "default");
 }

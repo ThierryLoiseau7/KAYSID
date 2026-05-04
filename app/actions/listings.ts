@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAuth, handleGuardError } from "@/lib/auth/guards";
+import { logger } from "@/lib/logger";
 import { FavoriteSchema, ReportSchema, UuidSchema } from "@/lib/validators/schemas";
 import { checkRateLimit, REPORT_LIMIT } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -46,27 +47,28 @@ export async function toggleFavorite(
   }
   const { user, supabase } = auth;
 
-  try {
-    const { data: existing } = await supabase
+  const pid = validated.data.propertyId;
+
+  // Attempt INSERT — unique constraint on (user_id, property_id) catches race duplicates
+  const { error: insertError } = await supabase
+    .from("favorites")
+    .insert({ user_id: user.id, property_id: pid });
+
+  if (!insertError) return { isFavorite: true };
+
+  // Unique violation (23505) → already favorited → toggle off
+  if (insertError.code === "23505") {
+    const { error: delError } = await supabase
       .from("favorites")
-      .select("id")
+      .delete()
       .eq("user_id", user.id)
-      .eq("property_id", validated.data.propertyId)
-      .maybeSingle();
+      .eq("property_id", pid);
 
-    if (existing) {
-      await supabase.from("favorites").delete().eq("id", existing.id);
-      return { isFavorite: false };
-    }
-
-    await supabase.from("favorites").insert({
-      user_id:     user.id,
-      property_id: validated.data.propertyId,
-    });
-    return { isFavorite: true };
-  } catch {
-    return { isFavorite: false, error: "Erè sèvè. Eseye ankò." };
+    if (delError) return { isFavorite: true, error: "Erè sèvè. Eseye ankò." };
+    return { isFavorite: false };
   }
+
+  return { isFavorite: false, error: insertError.message };
 }
 
 export async function getUserFavoriteIds(): Promise<string[]> {
@@ -115,7 +117,10 @@ export async function reportListing(
     details:     validated.data.details ?? null,
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    logger.error("reportListing insert failed", { message: error.message, propertyId: validated.data.propertyId });
+    return { error: error.message };
+  }
   revalidatePath(`/listings/${validated.data.propertyId}`);
   return {};
 }

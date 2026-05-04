@@ -1,6 +1,11 @@
 import { z } from "zod";
 import type { PropertyType, ListingType, Currency } from "@/types";
 
+// ── Sanitization ─────────────────────────────────────────────────────────────
+
+/** Strip all HTML tags to prevent XSS in user-generated content */
+const stripHtml = (s: string) => s.replace(/<[^>]*>/g, "").trim();
+
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const PROPERTY_TYPES = [
@@ -26,8 +31,8 @@ export const PropertyFormSchema = z
     commune:        z.string().min(1, "Komin obligatwa").max(100).trim(),
     neighborhood:   z.string().max(100).trim().default(""),
     address_text:   z.string().max(300).trim().default(""),
-    title:          z.string().min(5, "Tit dwe gen omwen 5 karaktè").max(100, "Tit twò long").trim(),
-    description:    z.string().min(30, "Deskripsyon dwe gen omwen 30 karaktè").max(1000).trim(),
+    title:          z.string().trim().transform(stripHtml).pipe(z.string().min(5, "Tit dwe gen omwen 5 karaktè").max(100, "Tit twò long")),
+    description:    z.string().trim().transform(stripHtml).pipe(z.string().min(30, "Deskripsyon dwe gen omwen 30 karaktè").max(1000)),
     bedrooms:       z.number().int().min(0).max(20),
     bathrooms:      z.number().int().min(0).max(20),
     area_sqm:       z.string().regex(/^\d*\.?\d*$/, "Sipèfisi envalid").default(""),
@@ -51,7 +56,7 @@ export const PropertyFormSchema = z
   );
 
 export const ProfileSchema = z.object({
-  full_name: z.string().min(2, "Non twò kout").max(100).trim(),
+  full_name: z.string().trim().transform(stripHtml).pipe(z.string().min(2, "Non twò kout").max(100)),
   phone:     z.string().max(20).trim().default(""),
   whatsapp:  z.string().max(20).trim().default(""),
 });

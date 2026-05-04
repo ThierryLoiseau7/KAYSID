@@ -1,5 +1,20 @@
+import { unstable_cache } from 'next/cache';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from './server';
 import type { Property, PropertyType, ListingType } from '@/types';
+
+/**
+ * Cookie-free anon client — safe inside unstable_cache.
+ * Only for public data (status='active' properties via RLS).
+ */
+function createAnonClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+  if (!url || !key) return null;
+  return createSupabaseClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
 
 export interface PropertyFilters {
   commune?: string;
@@ -72,43 +87,56 @@ export async function getProperties(
 
   const { data, error, count } = await query;
   if (error) {
-    console.error('getProperties error:', error.message);
+    const { logger } = await import('@/lib/logger');
+    logger.error('getProperties failed', { message: error.message });
     return { data: [], count: 0 };
   }
   return { data: (data as Property[]) ?? [], count: count ?? 0 };
 }
 
 export async function getPropertyById(id: string): Promise<Property | null> {
-  const supabase = await getClient();
-  if (!supabase) return null;
+  return unstable_cache(
+    async () => {
+      const supabase = createAnonClient();
+      if (!supabase) return null;
 
-  const { data, error } = await supabase
-    .from('properties')
-    .select(PROPERTY_SELECT)
-    .eq('id', id)
-    .single();
+      const { data, error } = await supabase
+        .from('properties')
+        .select(PROPERTY_SELECT)
+        .eq('id', id)
+        .single();
 
-  if (error) return null;
-  return data as Property;
+      if (error) return null;
+      return data as Property;
+    },
+    [`property-${id}`],
+    { revalidate: 30, tags: [`property-${id}`, 'properties'] }
+  )();
 }
 
 export async function getSimilarProperties(propertyId: string, commune: string): Promise<Property[]> {
-  const supabase = await getClient();
-  if (!supabase) return [];
+  return unstable_cache(
+    async () => {
+      const supabase = createAnonClient();
+      if (!supabase) return [];
 
-  const { data: locs } = await supabase.from('locations').select('id').eq('commune', commune);
-  if (!locs?.length) return [];
+      const { data: locs } = await supabase.from('locations').select('id').eq('commune', commune);
+      if (!locs?.length) return [];
 
-  const { data, error } = await supabase
-    .from('properties')
-    .select(PROPERTY_SELECT)
-    .eq('status', 'active')
-    .in('location_id', locs.map((l) => l.id))
-    .neq('id', propertyId)
-    .limit(3);
+      const { data, error } = await supabase
+        .from('properties')
+        .select(PROPERTY_SELECT)
+        .eq('status', 'active')
+        .in('location_id', locs.map((l) => l.id))
+        .neq('id', propertyId)
+        .limit(3);
 
-  if (error) return [];
-  return (data as Property[]) ?? [];
+      if (error) return [];
+      return (data as Property[]) ?? [];
+    },
+    [`similar-${commune}-${propertyId}`],
+    { revalidate: 120, tags: ['properties'] }
+  )();
 }
 
 export async function getUserProperties(userId: string): Promise<Property[]> {
@@ -161,17 +189,21 @@ export async function getAdminProperties(status?: string): Promise<Property[]> {
   }
 }
 
-export async function getRecentProperties(limit = 8): Promise<Property[]> {
-  const supabase = await getClient();
-  if (!supabase) return [];
+export const getRecentProperties = unstable_cache(
+  async (limit: number = 8): Promise<Property[]> => {
+    const supabase = createAnonClient();
+    if (!supabase) return [];
 
-  const { data, error } = await supabase
-    .from('properties')
-    .select(PROPERTY_SELECT)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(limit);
+    const { data, error } = await supabase
+      .from('properties')
+      .select(PROPERTY_SELECT)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
-  if (error) return [];
-  return (data as Property[]) ?? [];
-}
+    if (error) return [];
+    return (data as Property[]) ?? [];
+  },
+  ['recent-properties'],
+  { revalidate: 60, tags: ['properties'] }
+);

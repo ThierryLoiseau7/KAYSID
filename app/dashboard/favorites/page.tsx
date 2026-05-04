@@ -27,7 +27,7 @@ export default async function FavoritesPage() {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      favorites = (data?.map((f) => f.property).filter(Boolean) ?? []) as Property[];
+      favorites = (data?.map((f) => f.property).filter(Boolean) ?? []) as unknown as Property[];
     }
   } catch {
     // Supabase pa konfigure — paj vid
