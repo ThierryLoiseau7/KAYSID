@@ -24,7 +24,7 @@ export default function Error({
         <h1 className="text-xl font-bold text-slate-900 mb-2">
           Yon erè te pase
         </h1>
-        <p className="text-slate-500 text-sm mb-8">
+        <p className="text-slate-500 text-sm mb-4">
           Gen yon pwoblèm teknik. Eseye ankò oswa retounen nan paj prensipal la.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

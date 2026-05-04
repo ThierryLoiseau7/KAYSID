@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
+import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix Leaflet default icon issue with Next.js
-const icon = L.icon({
+const ICON = L.icon({
   iconUrl:       "/leaflet/marker-icon.png",
   iconRetinaUrl: "/leaflet/marker-icon-2x.png",
   shadowUrl:     "/leaflet/marker-shadow.png",
@@ -21,27 +19,56 @@ interface Props {
   label: string;
 }
 
+/**
+ * Leaflet imperatif — evite "Map container is already initialized"
+ * ki rive ak react-leaflet + React 18 StrictMode (double mount).
+ * Cleanup sou unmount garanti yon konteyné pwòp pou pwochen mont.
+ */
 export default function MapInner({ coords, label }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef       = useRef<L.Map | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Netwaye map egzistan (StrictMode monte 2 fwa nan dev)
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+
+    const map = L.map(containerRef.current, {
+      center:          coords,
+      zoom:            13,
+      scrollWheelZoom: false,
+      zoomControl:     true,
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+
+    L.marker(coords, { icon: ICON }).addTo(map).bindPopup(label);
+
+    L.circle(coords, {
+      radius:      500,
+      color:       "#0e7490",
+      fillColor:   "#0e7490",
+      fillOpacity: 0.1,
+    }).addTo(map);
+
+    mapRef.current = map;
+
+    return () => {
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, [coords, label]);
+
   return (
-    <MapContainer
-      center={coords}
-      zoom={13}
+    <div
+      ref={containerRef}
       style={{ height: "192px", width: "100%", borderRadius: "12px" }}
-      scrollWheelZoom={false}
-      zoomControl={true}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <Marker position={coords} icon={icon}>
-        <Popup>{label}</Popup>
-      </Marker>
-      <Circle
-        center={coords}
-        radius={500}
-        pathOptions={{ color: "#0e7490", fillColor: "#0e7490", fillOpacity: 0.1 }}
-      />
-    </MapContainer>
+    />
   );
 }
