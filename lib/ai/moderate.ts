@@ -47,6 +47,7 @@ Pri lwaye: ${data.price_monthly ?? "N/A"} | Pri vant: ${data.price_sale ?? "N/A"
       ],
       temperature: 0,
       max_tokens: 100,
+      response_format: { type: "json_object" },
     });
 
     const text = response.choices[0]?.message?.content?.trim() ?? "";

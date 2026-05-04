@@ -4,14 +4,8 @@ import Link from "next/link";
 import { Heart, Search } from "lucide-react";
 import PropertyCard from "@/components/properties/PropertyCard";
 import { createClient } from "@/lib/supabase/server";
+import { PROPERTY_SELECT } from "@/lib/supabase/queries";
 import type { Property } from "@/types";
-
-const PROPERTY_SELECT = `
-  *,
-  location:locations(*),
-  photos:property_photos(id, url, is_cover, display_order),
-  owner:profiles!owner_id(id, full_name, avatar_url, role, is_verified, whatsapp)
-`;
 
 export default async function FavoritesPage() {
   let favorites: Property[] = [];

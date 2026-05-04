@@ -1,6 +1,8 @@
 import { unstable_cache } from 'next/cache';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from './server';
+import { createAdminClient } from './admin';
+import { logger } from '@/lib/logger';
 import type { Property, PropertyType, ListingType } from '@/types';
 
 /**
@@ -27,7 +29,7 @@ export interface PropertyFilters {
   q?: string;
 }
 
-const PROPERTY_SELECT = `
+export const PROPERTY_SELECT = `
   *,
   location:locations(*),
   photos:property_photos(id, url, is_cover, display_order),
@@ -82,12 +84,13 @@ export async function getProperties(
   }
   if (filters?.bedrooms) query = query.gte('bedrooms', filters.bedrooms);
   if (filters?.q) {
-    query = query.or(`title.ilike.%${filters.q}%,description.ilike.%${filters.q}%`);
+    // Sanitize: retire karaktè espesyal PostgREST, limite longè
+    const safeQ = filters.q.replace(/[%_(),]/g, " ").trim().slice(0, 100);
+    if (safeQ) query = query.or(`title.ilike.%${safeQ}%,description.ilike.%${safeQ}%`);
   }
 
   const { data, error, count } = await query;
   if (error) {
-    const { logger } = await import('@/lib/logger');
     logger.error('getProperties failed', { message: error.message });
     return { data: [], count: 0 };
   }
@@ -171,7 +174,6 @@ export async function getPropertyForEdit(id: string, userId: string): Promise<Pr
 export async function getAdminProperties(status?: string): Promise<Property[]> {
   // Utilise service role pou bypasse RLS — admin wè tout pwopriyete
   try {
-    const { createAdminClient } = await import('./admin');
     const supabase = createAdminClient();
 
     let query = supabase
