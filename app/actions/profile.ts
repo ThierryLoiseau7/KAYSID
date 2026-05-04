@@ -41,6 +41,39 @@ export async function updateProfile(
   return {};
 }
 
+// ── Update Role ──────────────────────────────────────────────────────────────
+
+const ALLOWED_ROLES = ["tenant", "owner", "agent"] as const;
+type AllowedRole = (typeof ALLOWED_ROLES)[number];
+
+export async function updateRole(
+  role: string
+): Promise<{ error?: string }> {
+  if (!ALLOWED_ROLES.includes(role as AllowedRole)) {
+    return { error: "Wòl envalid." };
+  }
+
+  let auth: Awaited<ReturnType<typeof requireAuth>>;
+  try {
+    auth = await requireAuth();
+  } catch (err) {
+    return { error: handleGuardError(err) };
+  }
+  const { user, supabase } = auth;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ role, updated_at: new Date().toISOString() })
+    .eq("id", user.id)
+    .neq("role", "admin"); // pa janm depwomouvwa yon admin
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/settings");
+  return {};
+}
+
 // ── Get Profile ──────────────────────────────────────────────────────────────
 
 export interface ProfileData {
