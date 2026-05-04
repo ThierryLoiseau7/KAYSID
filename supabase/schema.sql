@@ -19,6 +19,22 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- FONKSYON UTILITÈ (kreye anvan trigger yo)
 -- =============================================================
 
+-- Increment view_count atomiquement (safe pou concurrent requests)
+CREATE OR REPLACE FUNCTION increment_view_count(property_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE properties SET view_count = view_count + 1 WHERE id = property_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Increment contact_count atomiquement
+CREATE OR REPLACE FUNCTION increment_contact_count(property_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE properties SET contact_count = contact_count + 1 WHERE id = property_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Mete updated_at ajou otomatikman sou chak UPDATE
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$

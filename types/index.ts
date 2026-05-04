@@ -91,12 +91,23 @@ export interface SearchFilters {
   currency?: Currency;
 }
 
+export type ReportReason =
+  | "fake_listing"
+  | "wrong_price"
+  | "wrong_location"
+  | "scam"
+  | "duplicate"
+  | "other";
+
+export type ReportStatus = "open" | "resolved" | "dismissed";
+
 export interface Report {
   id: number;
   property_id: string;
   reporter_id: string;
-  reason: "fake_listing" | "wrong_price" | "wrong_location" | "scam" | "duplicate" | "other";
+  reason: ReportReason;
   details: string | null;
-  status: "open" | "resolved" | "dismissed";
+  status: ReportStatus;
+  reviewed_by: string | null;
   created_at: string;
 }

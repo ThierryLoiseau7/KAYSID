@@ -1,40 +1,53 @@
-"use client";
+export const dynamic = "force-dynamic";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Heart, Search } from "lucide-react";
 import PropertyCard from "@/components/properties/PropertyCard";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
+import { createClient } from "@/lib/supabase/server";
+import type { Property } from "@/types";
 
-// Simulate saved favorites (first 3 properties)
-const INITIAL_FAVORITES = MOCK_PROPERTIES.slice(0, 3).map((p) => p.id);
+const PROPERTY_SELECT = `
+  *,
+  location:locations(*),
+  photos:property_photos(id, url, is_cover, display_order),
+  owner:profiles!owner_id(id, full_name, avatar_url, role, is_verified, whatsapp)
+`;
 
-export default function FavoritesPage() {
-  const [favorites, setFavorites] = useState<string[]>(INITIAL_FAVORITES);
+export default async function FavoritesPage() {
+  let favorites: Property[] = [];
 
-  function toggleFavorite(id: string) {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-    );
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data } = await supabase
+        .from("favorites")
+        .select(`property:properties(${PROPERTY_SELECT})`)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      favorites = (data?.map((f) => f.property).filter(Boolean) ?? []) as Property[];
+    }
+  } catch {
+    // Supabase pa konfigure — paj vid
   }
-
-  const savedProperties = MOCK_PROPERTIES.filter((p) => favorites.includes(p.id));
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Favori Ou</h1>
         <p className="text-slate-500 text-sm mt-1">
-          {savedProperties.length} pwopriyete ou sove
+          {favorites.length} pwopriyete ou sove
         </p>
       </div>
 
-      {savedProperties.length === 0 ? (
+      {favorites.length === 0 ? (
         <div className="card p-16 text-center">
           <Heart className="w-14 h-14 text-slate-200 mx-auto mb-4" />
           <h3 className="font-semibold text-slate-700 mb-2">Pa gen favori ankò</h3>
           <p className="text-slate-400 text-sm mb-6">
-            Klike sou kè a sou yon pwopriyete pou sove li la.
+            Klike sou kè a sou yon pwopriyete pou sove li isit.
           </p>
           <Link href="/listings" className="btn-primary text-sm">
             <Search className="w-4 h-4" />
@@ -43,13 +56,8 @@ export default function FavoritesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-          {savedProperties.map((p) => (
-            <PropertyCard
-              key={p.id}
-              property={p}
-              isFavorite={true}
-              onToggleFavorite={toggleFavorite}
-            />
+          {favorites.map((p) => (
+            <PropertyCard key={p.id} property={p} />
           ))}
         </div>
       )}

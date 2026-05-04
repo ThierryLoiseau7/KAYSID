@@ -7,6 +7,7 @@ import { Search, MapPin, PlusCircle, LogIn, Tag, User, LogOut } from "lucide-rea
 import { COMMUNES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { parseNaturalSearch } from "@/app/actions/ai";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const CATEGORY_PILLS = [
@@ -65,11 +66,24 @@ export default function Navbar() {
     router.refresh();
   }
 
-  function handleSearch(e: React.FormEvent) {
+  async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (commune) params.set("commune", commune);
-    if (query) params.set("q", query);
+
+    // Si rechèch gen plis ke 2 mo ak pa gen komin chwazi — itilize AI
+    const words = query.trim().split(/\s+/);
+    if (words.length >= 3 && !commune) {
+      const parsed = await parseNaturalSearch(query);
+      if (parsed.commune) params.set("commune", parsed.commune);
+      if (parsed.property_type) params.set("property_type", parsed.property_type);
+      if (parsed.listing_type) params.set("listing_type", parsed.listing_type);
+      if (parsed.bedrooms) params.set("bedrooms", String(parsed.bedrooms));
+      if (parsed.q) params.set("q", parsed.q);
+    } else {
+      if (commune) params.set("commune", commune);
+      if (query) params.set("q", query);
+    }
+
     router.push(`/listings${params.toString() ? `?${params}` : ""}`);
   }
 

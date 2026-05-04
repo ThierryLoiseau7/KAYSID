@@ -2,23 +2,21 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MapPin, BedDouble, Bath, Wifi, Zap, Droplets, Car, BadgeCheck, Star } from "lucide-react";
+import { MapPin, BedDouble, Bath, Wifi, Zap, Droplets, Car, BadgeCheck, Star } from "lucide-react";
 import { cn, formatPrice, getPropertyTypeLabel, getCoverPhoto, timeAgo } from "@/lib/utils";
 import type { Property } from "@/types";
+import FavoriteButton from "@/components/listings/FavoriteButton";
 
 interface PropertyCardProps {
   property: Property;
   isFavorite?: boolean;
-  onToggleFavorite?: (id: string) => void;
   className?: string;
-  /** Horizontal layout: image left, details right — used in listings page */
   horizontal?: boolean;
 }
 
 export default function PropertyCard({
   property,
   isFavorite = false,
-  onToggleFavorite,
   className,
   horizontal = false,
 }: PropertyCardProps) {
@@ -83,21 +81,7 @@ export default function PropertyCard({
                 </h3>
               </Link>
             </div>
-            {/* Favorite */}
-            {onToggleFavorite && (
-              <button
-                onClick={(e) => { e.preventDefault(); onToggleFavorite(property.id); }}
-                className={cn(
-                  "shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all border",
-                  isFavorite
-                    ? "bg-red-50 text-red-500 border-red-200"
-                    : "bg-white text-slate-400 border-slate-200 hover:text-red-500 hover:border-red-200"
-                )}
-                aria-label={isFavorite ? "Retire nan favori" : "Ajoute nan favori"}
-              >
-                <Heart className={cn("w-3.5 h-3.5", isFavorite && "fill-current")} />
-              </button>
-            )}
+            <FavoriteButton propertyId={property.id} initialFavorite={isFavorite} variant="card-horizontal" />
           </div>
 
           {/* Location */}
@@ -193,19 +177,7 @@ export default function PropertyCard({
             {property.listing_type === "rent" ? "Lwaye" : property.listing_type === "sale" ? "Vann" : "Lwaye/Vann"}
           </span>
         </div>
-        {/* Favorite */}
-        {onToggleFavorite && (
-          <button
-            onClick={(e) => { e.preventDefault(); onToggleFavorite(property.id); }}
-            className={cn(
-              "absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm",
-              isFavorite ? "bg-red-500 text-white" : "bg-white/90 backdrop-blur-sm text-slate-500 hover:text-red-500"
-            )}
-            aria-label={isFavorite ? "Retire nan favori" : "Ajoute nan favori"}
-          >
-            <Heart className={cn("w-3.5 h-3.5", isFavorite && "fill-current")} />
-          </button>
-        )}
+        <FavoriteButton propertyId={property.id} initialFavorite={isFavorite} variant="card-grid" />
       </Link>
 
       {/* Content */}

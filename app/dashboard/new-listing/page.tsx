@@ -9,6 +9,8 @@ import {
 import { COMMUNES, LOCATIONS, PROPERTY_TYPE_LABELS } from "@/lib/constants";
 import type { PropertyType, ListingType, Currency } from "@/types";
 import { createProperty } from "@/app/actions/properties";
+import { generateListingContent, estimatePrice } from "@/app/actions/ai";
+import { Sparkles } from "lucide-react";
 
 const STEPS = [
   { id: 1, label: "Tip",       icon: Home       },
@@ -68,6 +70,9 @@ export default function NewListingPage() {
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [photos, setPhotos] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [priceHint, setPriceHint] = useState("");
   const [error, setError] = useState("");
 
   function set<K extends keyof FormData>(key: K, value: FormData[K]) {
@@ -141,6 +146,52 @@ export default function NewListingPage() {
 
   const toggle = (key: keyof FormData) =>
     set(key, !form[key] as FormData[typeof key]);
+
+  async function handleEstimatePrice() {
+    if (!form.commune) { setError("Chwazi yon komin anvan pou AI ka estime pri a."); return; }
+    setError("");
+    setPriceLoading(true);
+    const result = await estimatePrice({
+      property_type: form.property_type,
+      listing_type: form.listing_type,
+      commune: form.commune,
+      bedrooms: form.bedrooms,
+      bathrooms: form.bathrooms,
+      is_furnished: form.is_furnished,
+      area_sqm: form.area_sqm,
+      currency: form.currency,
+    });
+    setPriceLoading(false);
+    if (result.error) { setError(result.error); return; }
+    if (result.price_monthly && !form.price_monthly) set("price_monthly", String(result.price_monthly));
+    if (result.price_sale && !form.price_sale) set("price_sale", String(result.price_sale));
+    if (result.reasoning) setPriceHint(result.reasoning);
+  }
+
+  async function handleGenerateAI() {
+    if (!form.commune) { setError("Chwazi yon komin anvan pou AI ka jenere kontni."); return; }
+    setError("");
+    setAiLoading(true);
+    const result = await generateListingContent({
+      property_type: form.property_type,
+      listing_type: form.listing_type,
+      commune: form.commune,
+      neighborhood: form.neighborhood,
+      bedrooms: form.bedrooms,
+      bathrooms: form.bathrooms,
+      area_sqm: form.area_sqm,
+      is_furnished: form.is_furnished,
+      has_water: form.has_water,
+      has_electricity: form.has_electricity,
+      has_generator: form.has_generator,
+      has_parking: form.has_parking,
+      has_internet: form.has_internet,
+    });
+    setAiLoading(false);
+    if (result.error) { setError(result.error); return; }
+    if (result.title) set("title", result.title);
+    if (result.description) set("description", result.description);
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -320,8 +371,25 @@ export default function NewListingPage() {
         {/* STEP 3 — Details */}
         {step === 3 && (
           <div>
-            <h2 className="font-bold text-slate-900 text-lg mb-1">Detay Pwopriyete</h2>
-            <p className="text-slate-500 text-sm mb-6">Dekri kay ou pou atire lokatè</p>
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h2 className="font-bold text-slate-900 text-lg mb-1">Detay Pwopriyete</h2>
+                <p className="text-slate-500 text-sm">Dekri kay ou pou atire lokatè</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleGenerateAI}
+                disabled={aiLoading}
+                className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition-colors shrink-0"
+              >
+                {aiLoading ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
+                {aiLoading ? "Kap jenere..." : "Jenere ak AI"}
+              </button>
+            </div>
 
             <div className="space-y-4">
               <div>
@@ -457,8 +525,31 @@ export default function NewListingPage() {
         {/* STEP 4 — Price */}
         {step === 4 && (
           <div>
-            <h2 className="font-bold text-slate-900 text-lg mb-1">Pri</h2>
-            <p className="text-slate-500 text-sm mb-6">Mete pri pwopriyete ou</p>
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h2 className="font-bold text-slate-900 text-lg mb-1">Pri</h2>
+                <p className="text-slate-500 text-sm">Mete pri pwopriyete ou</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleEstimatePrice}
+                disabled={priceLoading}
+                className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition-colors shrink-0"
+              >
+                {priceLoading ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
+                {priceLoading ? "Kap kalkile..." : "Estime ak AI"}
+              </button>
+            </div>
+            {priceHint && (
+              <div className="flex items-start gap-2 p-3 bg-violet-50 border border-violet-200 rounded-xl text-xs text-violet-700 mb-4">
+                <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                {priceHint}
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>

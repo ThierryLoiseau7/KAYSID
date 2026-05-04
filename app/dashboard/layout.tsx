@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, Building2, PlusCircle, Heart, Settings, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, Building2, PlusCircle, Heart, Settings, LogOut, Home, UserCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/properties",    label: "Pwopriyete Mwen", icon: Building2       },
   { href: "/dashboard/new-listing",   label: "Nouvo Anons",     icon: PlusCircle      },
   { href: "/dashboard/favorites",     label: "Favori",          icon: Heart           },
+  { href: "/dashboard/profile",       label: "Pwofil Mwen",     icon: UserCircle      },
   { href: "/dashboard/settings",      label: "Paramèt",         icon: Settings        },
 ];
 
