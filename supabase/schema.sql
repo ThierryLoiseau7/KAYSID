@@ -390,10 +390,9 @@ CREATE POLICY "properties_delete_own"
   ON properties FOR DELETE
   USING (auth.uid() = owner_id);
 
--- Admin ka tout wè
-CREATE POLICY "properties_admin_all"
-  ON properties FOR ALL
-  USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
+-- Admin yo itilize service_role key (createAdminClient) — bypasse RLS.
+-- Pa bezwen yon policy "FOR ALL" ki ka kreye infinite recursion ak
+-- kombinasyon SELECT + UPDATE policies nan PostgreSQL.
 
 -- Photos
 ALTER TABLE property_photos ENABLE ROW LEVEL SECURITY;
