@@ -133,8 +133,12 @@ export default function NewListingPage() {
       try {
         const uploadRes = await fetch("/api/upload", { method: "POST", body: fd });
         const uploadData = await uploadRes.json();
-        if (!uploadRes.ok || uploadData.error) {
-          setError(`Anons kreye ✓ — men foto pa chaje: ${uploadData.error ?? uploadRes.status}`);
+        const uploadErr = uploadData.error
+          ?? (uploadData.errors?.length ? uploadData.errors.join(", ") : null)
+          ?? (!uploadRes.ok ? `HTTP ${uploadRes.status}` : null)
+          ?? (uploadData.urls?.length === 0 ? "Pa gen foto ki chaje" : null);
+        if (uploadErr) {
+          setError(`Anons kreye ✓ — men foto pa chaje: ${uploadErr}`);
           setLoading(false);
           return;
         }

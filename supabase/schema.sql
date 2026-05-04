@@ -400,13 +400,20 @@ ALTER TABLE property_photos ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "photos_select_all"
   ON property_photos FOR SELECT USING (true);
 
+-- SECURITY DEFINER function evite RLS recursion nan subquery la
+CREATE OR REPLACE FUNCTION get_property_owner(pid UUID)
+RETURNS UUID
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT owner_id FROM properties WHERE id = pid;
+$$;
+
 CREATE POLICY "photos_manage_own"
   ON property_photos FOR ALL
-  USING (
-    auth.uid() IN (
-      SELECT owner_id FROM properties WHERE id = property_id
-    )
-  );
+  USING     (auth.uid() = get_property_owner(property_id))
+  WITH CHECK (auth.uid() = get_property_owner(property_id));
 
 -- Favorites
 ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
@@ -424,11 +431,7 @@ CREATE POLICY "contacts_insert_any"
 
 CREATE POLICY "contacts_select_owner"
   ON contact_requests FOR SELECT
-  USING (
-    auth.uid() IN (
-      SELECT owner_id FROM properties WHERE id = property_id
-    )
-  );
+  USING (auth.uid() = get_property_owner(property_id));
 
 -- Reports
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
