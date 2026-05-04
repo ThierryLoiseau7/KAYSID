@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { uploadToR2 } from "@/lib/r2";
+import { UuidSchema } from "@/lib/validators/schemas";
+import { logger } from "@/lib/logger";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
@@ -14,8 +17,8 @@ export async function POST(req: Request) {
   const propertyId = formData.get("property_id") as string | null;
   const files = formData.getAll("files") as File[];
 
-  if (!propertyId) {
-    return NextResponse.json({ error: "property_id obligatwa" }, { status: 400 });
+  if (!UuidSchema.safeParse(propertyId).success) {
+    return NextResponse.json({ error: "property_id envalid" }, { status: 400 });
   }
   if (!files.length) {
     return NextResponse.json({ urls: [] });
@@ -33,7 +36,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Pwopriyete pa jwenn" }, { status: 404 });
   }
 
-  const uploadedUrls: string[] = [];
+  const uploadedUrls: { url: string; key: string }[] = [];
   const errors: string[] = [];
 
   for (let i = 0; i < Math.min(files.length, 8); i++) {
@@ -49,23 +52,24 @@ export async function POST(req: Request) {
     }
 
     const ext = file.type.split("/")[1].replace("jpeg", "jpg");
-    const key = `properties/${propertyId}/${Date.now()}-${i}.${ext}`;
+    const key = `properties/${propertyId}/${randomUUID()}.${ext}`;
     const buffer = Buffer.from(await file.arrayBuffer());
 
     try {
       const url = await uploadToR2(key, buffer, file.type);
-      uploadedUrls.push(url);
+      uploadedUrls.push({ url, key });
     } catch (err) {
       errors.push(`${file.name}: echèk upload`);
-      console.error("R2 upload error:", err);
+      logger.error("R2 upload error", { key, message: String(err) });
     }
   }
 
   if (uploadedUrls.length > 0) {
-    const photosToInsert = uploadedUrls.map((url, idx) => ({
+    const photosToInsert = uploadedUrls.map(({ url, key }, idx) => ({
       property_id: propertyId,
       url,
-      is_cover: idx === 0,
+      r2_key:       key,
+      is_cover:     idx === 0,
       display_order: idx,
     }));
 
@@ -74,7 +78,7 @@ export async function POST(req: Request) {
       .insert(photosToInsert);
 
     if (dbError) {
-      console.error("DB insert error:", dbError.message);
+      logger.error("property_photos insert failed", { message: dbError.message });
       return NextResponse.json(
         { error: "Foto upload men pa anrejistre: " + dbError.message },
         { status: 500 }
@@ -83,7 +87,7 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({
-    urls: uploadedUrls,
+    urls:   uploadedUrls.map((u) => u.url),
     errors: errors.length > 0 ? errors : undefined,
   });
 }
