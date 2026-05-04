@@ -109,4 +109,4 @@ export const PRICE_RANGES = [
 ];
 
 export const WHATSAPP_MESSAGE_TEMPLATE = (title: string, ref: string) =>
-  `Bonjou! Mwen wè anons ou sou KaySid pou "${title}" (Ref: ${ref}). Eske li toujou disponib?`;
+  `Bonjou! Mwen wè anons ou sou PouPiyay pou "${title}" (Ref: ${ref}). Eske li toujou disponib?`;

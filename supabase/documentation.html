@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KaySid — Documentation Base de Données</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #1e293b;
+      background: #f8fafc;
+      padding: 40px 20px;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid #e2e8f0;
+      padding: 60px;
+    }
+
+    /* ── Header ── */
+    .cover {
+      border-left: 6px solid #0e7490;
+      padding-left: 24px;
+      margin-bottom: 48px;
+    }
+    .cover-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #0e7490;
+      margin-bottom: 8px;
+    }
+    .cover h1 {
+      font-size: 28px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+    .cover p {
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .meta {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .meta-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #94a3b8;
+    }
+    .meta-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    /* ── Section titles ── */
+    h2 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 2px solid #0e7490;
+      padding-bottom: 8px;
+      margin-top: 48px;
+      margin-bottom: 20px;
+    }
+    h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h3 .table-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: #f0f9ff;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    /* ── Description blocs ── */
+    .desc {
+      color: #475569;
+      font-size: 12.5px;
+      margin-bottom: 14px;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-left: 3px solid #cbd5e1;
+    }
+
+    /* ── Tables SQL ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    thead th {
+      background: #0e7490;
+      color: white;
+      text-align: left;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    tbody tr:hover { background: #f0f9ff; }
+    tbody td {
+      padding: 7px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    .col-name {
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-weight: 700;
+      color: #0e7490;
+      white-space: nowrap;
+    }
+    .col-type {
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      color: #7c3aed;
+      white-space: nowrap;
+      font-size: 11px;
+    }
+    .col-default {
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      color: #059669;
+      font-size: 11px;
+    }
+    .col-note { color: #475569; font-size: 11.5px; }
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-right: 3px;
+    }
+    .badge-pk  { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .badge-fk  { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+    .badge-nn  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .badge-uq  { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .badge-auto { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+
+    /* ── Relations diagram ── */
+    .diagram {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 11.5px;
+      padding: 24px 28px;
+      border-radius: 4px;
+      line-height: 2;
+      margin: 16px 0 24px;
+      overflow-x: auto;
+    }
+    .diagram .tbl { color: #38bdf8; font-weight: 700; }
+    .diagram .fk  { color: #86efac; }
+    .diagram .arr { color: #fb923c; }
+    .diagram .cmt { color: #64748b; }
+
+    /* ── RLS section ── */
+    .rls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .rls-card {
+      border: 1px solid #e2e8f0;
+      padding: 14px 16px;
+    }
+    .rls-table-name {
+      font-family: monospace;
+      font-weight: 700;
+      color: #0e7490;
+      font-size: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .rls-policy {
+      font-size: 11.5px;
+      color: #334155;
+      padding: 4px 0;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .rls-policy:last-child { border: none; }
+    .rls-op {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .op-select { background: #dbeafe; color: #1e40af; }
+    .op-insert { background: #dcfce7; color: #166534; }
+    .op-update { background: #fef9c3; color: #854d0e; }
+    .op-delete { background: #fee2e2; color: #991b1b; }
+    .op-all    { background: #f3e8ff; color: #6b21a8; }
+
+    /* ── Triggers ── */
+    .trigger-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .trigger-card {
+      border: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .trigger-when {
+      font-family: monospace;
+      font-size: 10px;
+      font-weight: 700;
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 4px 8px;
+      white-space: nowrap;
+      align-self: start;
+      margin-top: 2px;
+    }
+    .trigger-name {
+      font-weight: 700;
+      color: #0f172a;
+      font-size: 12px;
+    }
+    .trigger-desc {
+      color: #475569;
+      font-size: 11.5px;
+      margin-top: 3px;
+    }
+
+    /* ── Index section ── */
+    .index-table {
+      font-size: 11.5px;
+    }
+
+    /* ── Order section ── */
+    .steps {
+      counter-reset: step;
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .step {
+      counter-increment: step;
+      display: flex;
+      gap: 16px;
+      align-items: start;
+      padding: 14px 16px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .step::before {
+      content: counter(step);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: #0e7490;
+      color: white;
+      font-weight: 900;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .step-title { font-weight: 700; color: #0f172a; font-size: 12.5px; }
+    .step-desc  { color: #475569; font-size: 11.5px; margin-top: 3px; }
+    .code-inline {
+      font-family: monospace;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      padding: 1px 5px;
+      font-size: 11px;
+      color: #0e7490;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 48px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { background: white; padding: 0; }
+      .page { border: none; padding: 40px; max-width: 100%; }
+      h2 { page-break-before: always; }
+      h2:first-of-type { page-break-before: avoid; }
+      table { page-break-inside: avoid; }
+      .trigger-card, .step, .rls-card { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══════════════ COVER ══════════════ -->
+  <div class="cover">
+    <div class="cover-tag">Documentation Technique</div>
+    <h1>KaySid — Base de Données</h1>
+    <p>Schema PostgreSQL complet — Platfòm imobilye pou Sid Ayiti</p>
+    <div class="meta">
+      <div class="meta-item">
+        <span class="meta-label">Baz Done</span>
+        <span class="meta-value">PostgreSQL 15 (Supabase)</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Projè Supabase</span>
+        <span class="meta-value">KAY_SID</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Fichye Schema</span>
+        <span class="meta-value">supabase/schema.sql</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Fichye Done Inisyal</span>
+        <span class="meta-value">supabase/seed.sql</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Dat</span>
+        <span class="meta-value">Avril 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ LÒDE EKZEKISYON ══════════════ -->
+  <h2>Lòd pou Kouri Fichye yo</h2>
+  <div class="steps">
+    <div class="step">
+      <div>
+        <div class="step-title">Kouri <span class="code-inline">schema.sql</span></div>
+        <div class="step-desc">Kreye tout tabèl, constraint, trigger, index, ak politique RLS yo. Dwe kouri yon sèl fwa sou yon baz done vid.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div>
+        <div class="step-title">Kouri <span class="code-inline">seed.sql</span></div>
+        <div class="step-desc">Ajoute 80+ lokalizasyon (depatman, komin, katye) nan tab <span class="code-inline">locations</span>. Obligatwa — pa gen pwopriyete posib san lokalizasyon.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div>
+        <div class="step-title">Kreye kont admin</div>
+        <div class="step-desc">Enskri nòmalman sou sit la, epi kouri: <span class="code-inline">UPDATE profiles SET role = 'admin' WHERE email = 'ou@email.com';</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ DYAGRAM RELASYON ══════════════ -->
+  <h2>Dyagram Relasyon ant Tabèl yo</h2>
+  <div class="diagram">
+<span class="cmt">-- Kle: PK = Primary Key  |  FK = Foreign Key  |  →→ = CASCADE DELETE</span>
+
+<span class="tbl">auth.users</span> (Supabase)
+    <span class="arr">↓ trigger on_auth_user_created</span>
+<span class="tbl">profiles</span>          <span class="cmt">PK: id (UUID)   — yon ranje pou chak itilizatè</span>
+    <span class="arr">↓ owner_id</span>                        <span class="arr">↓ user_id</span>
+<span class="tbl">properties</span>        <span class="cmt">PK: id (UUID)</span>     <span class="tbl">favorites</span>       <span class="cmt">PK: (user_id, property_id)</span>
+    <span class="fk">FK: location_id →→ locations.id</span>      <span class="fk">FK: property_id →→ properties.id</span>
+    <span class="arr">↓ property_id (CASCADE)</span>
+    <span class="tbl">property_photos</span>   <span class="cmt">PK: id (INT, START 1)</span>
+    <span class="tbl">contact_requests</span>  <span class="cmt">PK: id (INT, START 1)  → trigger: +contact_count</span>
+    <span class="tbl">reports</span>           <span class="cmt">PK: id (INT, START 1)  → trigger: +report_count, suspend si ≥5</span>
+
+<span class="tbl">locations</span>          <span class="cmt">PK: id (INT, START 1)  — 80+ komin/katye Sid Ayiti</span>
+  </div>
+
+  <!-- ══════════════ TAB: PROFILES ══════════════ -->
+  <h2>Detay Tabèl yo</h2>
+
+  <h3>profiles <span class="table-tag">UUID PK</span></h3>
+  <div class="desc">
+    Pwofil chak itilizatè. Kreye <strong>otomatikman</strong> via trigger lè yon moun enskri sou Supabase Auth.
+    Pa kraze profil la si itilizatè Auth efase — CASCADE DELETE fè sa.
+  </div>
+  <table>
+    <thead>
+      <tr><th>Kolòn</th><th>Tip</th><th>Default</th><th>Règ</th><th>Deskripsyon</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-default">—</td><td><span class="badge badge-pk">PK</span><span class="badge badge-fk">FK auth.users</span></td><td class="col-note">Menm UUID ak Supabase Auth</td></tr>
+      <tr><td class="col-name">email</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">Kopi email Auth (pou rechèch admin fasil)</td></tr>
+      <tr><td class="col-name">phone</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">Nimewo telefòn opsyonèl</td></tr>
+      <tr><td class="col-name">full_name</td><td class="col-type">TEXT</td><td class="col-default">''</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Non konplè itilizatè a</td></tr>
+      <tr><td class="col-name">avatar_url</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">URL foto pwofil (R2 oswa URL ekstèn)</td></tr>
+      <tr><td class="col-name">role</td><td class="col-type">TEXT</td><td class="col-default">'tenant'</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note"><strong>tenant</strong> | owner | agent | admin</td></tr>
+      <tr><td class="col-name">is_verified</td><td class="col-type">BOOLEAN</td><td class="col-default">false</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Admin verifye idantite moun nan</td></tr>
+      <tr><td class="col-name">is_premium</td><td class="col-type">BOOLEAN</td><td class="col-default">false</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Abònman peye (fonksyonalite fiti)</td></tr>
+      <tr><td class="col-name">whatsapp</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">Nimewo WhatsApp, egzanp: +50934567890</td></tr>
+      <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-default">now()</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Dat enskripsyon</td></tr>
+      <tr><td class="col-name">updated_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-default">now()</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Mete ajou otomatikman via trigger</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════ TAB: LOCATIONS ══════════════ -->
+  <h3>locations <span class="table-tag">INT PK · START 1</span></h3>
+  <div class="desc">
+    Jeografi Sid Ayiti — depatman, komin, katye. Popile via <strong>seed.sql</strong> (80+ ranje).
+    Yon pwopriyete <em>dwe</em> gen yon lokalizasyon valid — pa ka NULL.
+  </div>
+  <table>
+    <thead>
+      <tr><th>Kolòn</th><th>Tip</th><th>Default</th><th>Règ</th><th>Deskripsyon</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="col-name">id</td><td class="col-type">INT IDENTITY</td><td class="col-default">1, 2, 3…</td><td><span class="badge badge-pk">PK</span><span class="badge badge-auto">AUTO</span></td><td class="col-note">Kòmanse nan 1, otomatik</td></tr>
+      <tr><td class="col-name">department</td><td class="col-type">TEXT</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Sud | Sud-Est | Nippes | Grand Anz</td></tr>
+      <tr><td class="col-name">commune</td><td class="col-type">TEXT</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Okay, Jakmèl, Port-Salut, Jeremi…</td></tr>
+      <tr><td class="col-name">neighborhood</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td><span class="badge badge-uq">UNIQUE(commune, neighborhood)</span></td><td class="col-note">NULL = tout komin an (pa gen katye espesifik)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════ TAB: PROPERTIES ══════════════ -->
+  <h3>properties <span class="table-tag">UUID PK</span></h3>
+  <div class="desc">
+    Kè platfòm nan. UUID pou sekirite URL (pa ka devine lòt anons).
+    Tout anons kòmanse nan <strong>pending_review</strong> — admin dwe apwouve anvan li parèt piblikman.
+  </div>
+  <table>
+    <thead>
+      <tr><th>Kolòn</th><th>Tip</th><th>Default</th><th>Règ</th><th>Deskripsyon</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-default">gen_random_uuid()</td><td><span class="badge badge-pk">PK</span></td><td class="col-note">Jenere otomatikman</td></tr>
+      <tr><td class="col-name">owner_id</td><td class="col-type">UUID</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span><span class="badge badge-fk">FK profiles</span></td><td class="col-note">Mèt anons lan</td></tr>
+      <tr><td class="col-name">location_id</td><td class="col-type">INT</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span><span class="badge badge-fk">FK locations</span></td><td class="col-note">Lokalizasyon pwopriyete a</td></tr>
+      <tr><td class="col-name">title</td><td class="col-type">TEXT</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">5 a 150 karaktè</td></tr>
+      <tr><td class="col-name">description</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">Max 2000 karaktè</td></tr>
+      <tr><td class="col-name">property_type</td><td class="col-type">TEXT</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">chambrette | studio | appartement | kay_2_chanm | kay_3_chanm | kay_4_chanm | te | villa</td></tr>
+      <tr><td class="col-name">listing_type</td><td class="col-type">TEXT</td><td class="col-default">'rent'</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">rent | sale | both</td></tr>
+      <tr><td class="col-name">price_monthly</td><td class="col-type">NUMERIC(12,2)</td><td class="col-default">NULL</td><td></td><td class="col-note">Pri pa mwa (pou rent/both)</td></tr>
+      <tr><td class="col-name">price_sale</td><td class="col-type">NUMERIC(14,2)</td><td class="col-default">NULL</td><td></td><td class="col-note">Pri vant (pou sale/both)</td></tr>
+      <tr><td class="col-name">currency</td><td class="col-type">TEXT</td><td class="col-default">'USD'</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">USD | HTG</td></tr>
+      <tr><td class="col-name">bedrooms</td><td class="col-type">SMALLINT</td><td class="col-default">0</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Kantite chanm (0 pou studio/chanbrèt)</td></tr>
+      <tr><td class="col-name">bathrooms</td><td class="col-type">SMALLINT</td><td class="col-default">0</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Kantite saldeben</td></tr>
+      <tr><td class="col-name">area_sqm</td><td class="col-type">NUMERIC(8,2)</td><td class="col-default">NULL</td><td></td><td class="col-note">Sipèfisi an mèt kare (opsyonèl)</td></tr>
+      <tr><td class="col-name">is_furnished</td><td class="col-type">BOOLEAN</td><td class="col-default">false</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Meble oswa pa meble</td></tr>
+      <tr><td class="col-name">has_water</td><td class="col-type">BOOLEAN</td><td class="col-default">true</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Dlo disponib</td></tr>
+      <tr><td class="col-name">has_electricity</td><td class="col-type">BOOLEAN</td><td class="col-default">true</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Kouran disponib (EDH)</td></tr>
+      <tr><td class="col-name">has_generator</td><td class="col-type">BOOLEAN</td><td class="col-default">false</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Jeneratè elektrik</td></tr>
+      <tr><td class="col-name">has_parking</td><td class="col-type">BOOLEAN</td><td class="col-default">false</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Pakin disponib</td></tr>
+      <tr><td class="col-name">has_internet</td><td class="col-type">BOOLEAN</td><td class="col-default">false</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Entènèt disponib</td></tr>
+      <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td class="col-default">'pending_review'</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note"><strong>pending_review</strong> → active → rented / sold / suspended</td></tr>
+      <tr><td class="col-name">is_featured</td><td class="col-type">BOOLEAN</td><td class="col-default">false</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Anons mete an avant (peye) — parèt anvan lòt</td></tr>
+      <tr><td class="col-name">report_count</td><td class="col-type">SMALLINT</td><td class="col-default">0</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Inkremente otomatikman. ≥ 5 → status = suspended</td></tr>
+      <tr><td class="col-name">view_count</td><td class="col-type">INT</td><td class="col-default">0</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Kantite vizit paj la</td></tr>
+      <tr><td class="col-name">contact_count</td><td class="col-type">INT</td><td class="col-default">0</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Kantite klik WhatsApp — otomatik via trigger</td></tr>
+      <tr><td class="col-name">address_text</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">Adrès tèks lib (opsyonèl)</td></tr>
+      <tr><td class="col-name">latitude</td><td class="col-type">NUMERIC(10,8)</td><td class="col-default">NULL</td><td></td><td class="col-note">GPS — pou kat Leaflet (fiti)</td></tr>
+      <tr><td class="col-name">longitude</td><td class="col-type">NUMERIC(11,8)</td><td class="col-default">NULL</td><td></td><td class="col-note">GPS — pou kat Leaflet (fiti)</td></tr>
+      <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-default">now()</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Dat kreyasyon anons</td></tr>
+      <tr><td class="col-name">updated_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-default">now()</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Mete ajou otomatikman via trigger</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════ TAB: PROPERTY_PHOTOS ══════════════ -->
+  <h3>property_photos <span class="table-tag">INT PK · START 1</span></h3>
+  <div class="desc">
+    Foto pwopriyete yo — stoke sou <strong>Cloudflare R2</strong>. Max 10 foto pa pwopriyete.
+    Yon sèl foto kapab <code>is_cover = true</code> (garanti pa yon index unique partiel).
+  </div>
+  <table>
+    <thead>
+      <tr><th>Kolòn</th><th>Tip</th><th>Default</th><th>Règ</th><th>Deskripsyon</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="col-name">id</td><td class="col-type">INT IDENTITY</td><td class="col-default">1, 2, 3…</td><td><span class="badge badge-pk">PK</span><span class="badge badge-auto">AUTO</span></td><td class="col-note">Kòmanse nan 1</td></tr>
+      <tr><td class="col-name">property_id</td><td class="col-type">UUID</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span><span class="badge badge-fk">FK properties</span></td><td class="col-note">Efase foto si pwopriyete efase (CASCADE)</td></tr>
+      <tr><td class="col-name">url</td><td class="col-type">TEXT</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">URL piblik R2, egzanp: https://pub-xxx.r2.dev/photos/abc.jpg</td></tr>
+      <tr><td class="col-name">r2_key</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">Kle objè R2 (pou efase foto nan bucket la dirèkteman)</td></tr>
+      <tr><td class="col-name">is_cover</td><td class="col-type">BOOLEAN</td><td class="col-default">false</td><td><span class="badge badge-uq">UNIQUE si true</span></td><td class="col-note">Foto kouvet — youn sèlman pa pwopriyete</td></tr>
+      <tr><td class="col-name">display_order</td><td class="col-type">SMALLINT</td><td class="col-default">0</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">0 = premye foto nan galri</td></tr>
+      <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-default">now()</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Dat upload foto</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════ TAB: FAVORITES ══════════════ -->
+  <h3>favorites <span class="table-tag">PK KONPOZE</span></h3>
+  <div class="desc">
+    Lis anons ke yon itilizatè sove pou wè pita. Kle prensipal konpoze — menm moun pa ka sove menm anons de fwa.
+  </div>
+  <table>
+    <thead>
+      <tr><th>Kolòn</th><th>Tip</th><th>Default</th><th>Règ</th><th>Deskripsyon</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="col-name">user_id</td><td class="col-type">UUID</td><td class="col-default">—</td><td><span class="badge badge-pk">PK</span><span class="badge badge-fk">FK profiles</span></td><td class="col-note">Itilizatè ki sove anons lan</td></tr>
+      <tr><td class="col-name">property_id</td><td class="col-type">UUID</td><td class="col-default">—</td><td><span class="badge badge-pk">PK</span><span class="badge badge-fk">FK properties</span></td><td class="col-note">Anons ki sove</td></tr>
+      <tr><td class="col-name">saved_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-default">now()</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Dat lè anons lan te sove</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════ TAB: CONTACT_REQUESTS ══════════════ -->
+  <h3>contact_requests <span class="table-tag">INT PK · START 1</span></h3>
+  <div class="desc">
+    Chak fwa yon moun klike "Kontakte via WhatsApp". Pèmèt suivi analytics ak deteksyon spam.
+    <strong>Trigger</strong> inkremente <code>properties.contact_count</code> otomatikman.
+  </div>
+  <table>
+    <thead>
+      <tr><th>Kolòn</th><th>Tip</th><th>Default</th><th>Règ</th><th>Deskripsyon</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="col-name">id</td><td class="col-type">INT IDENTITY</td><td class="col-default">1, 2, 3…</td><td><span class="badge badge-pk">PK</span><span class="badge badge-auto">AUTO</span></td><td class="col-note">Kòmanse nan 1</td></tr>
+      <tr><td class="col-name">property_id</td><td class="col-type">UUID</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span><span class="badge badge-fk">FK properties</span></td><td class="col-note">Anons ki te kontakte</td></tr>
+      <tr><td class="col-name">requester_id</td><td class="col-type">UUID</td><td class="col-default">NULL</td><td><span class="badge badge-fk">FK profiles</span></td><td class="col-note">NULL si itilizatè pa konekte</td></tr>
+      <tr><td class="col-name">requester_ip</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">Adrès IP (pou détekte spam)</td></tr>
+      <tr><td class="col-name">contact_method</td><td class="col-type">TEXT</td><td class="col-default">'whatsapp'</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">whatsapp | call | email</td></tr>
+      <tr><td class="col-name">message</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">Mesaj pré-ranpli opsyonèl</td></tr>
+      <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-default">now()</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Dat kontakt la</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════ TAB: REPORTS ══════════════ -->
+  <h3>reports <span class="table-tag">INT PK · START 1</span></h3>
+  <div class="desc">
+    Sistèm siyal anons pwoblematik. Lè yon pwopriyete rive nan <strong>5 rapò</strong>, trigger otomatikman
+    mete statik li a <strong>suspended</strong> — pi moun ka wè li ankò jiskaske admin egzamine.
+  </div>
+  <table>
+    <thead>
+      <tr><th>Kolòn</th><th>Tip</th><th>Default</th><th>Règ</th><th>Deskripsyon</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="col-name">id</td><td class="col-type">INT IDENTITY</td><td class="col-default">1, 2, 3…</td><td><span class="badge badge-pk">PK</span><span class="badge badge-auto">AUTO</span></td><td class="col-note">Kòmanse nan 1</td></tr>
+      <tr><td class="col-name">property_id</td><td class="col-type">UUID</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span><span class="badge badge-fk">FK properties</span></td><td class="col-note">Anons ki siyal</td></tr>
+      <tr><td class="col-name">reporter_id</td><td class="col-type">UUID</td><td class="col-default">NULL</td><td><span class="badge badge-fk">FK profiles</span></td><td class="col-note">NULL si itilizatè efase kont li</td></tr>
+      <tr><td class="col-name">reason</td><td class="col-type">TEXT</td><td class="col-default">—</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">fake_listing | wrong_price | wrong_location | scam | duplicate | other</td></tr>
+      <tr><td class="col-name">details</td><td class="col-type">TEXT</td><td class="col-default">NULL</td><td></td><td class="col-note">Eksplikasyon siplemantè opsyonèl</td></tr>
+      <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td class="col-default">'open'</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">open → resolved | dismissed</td></tr>
+      <tr><td class="col-name">reviewed_by</td><td class="col-type">UUID</td><td class="col-default">NULL</td><td><span class="badge badge-fk">FK profiles</span></td><td class="col-note">Admin ki revize rapò a</td></tr>
+      <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-default">now()</td><td><span class="badge badge-nn">NOT NULL</span></td><td class="col-note">Dat siyal la</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════ TRIGGERS ══════════════ -->
+  <h2>Trigger yo (Aksyon Otomatik)</h2>
+  <div class="trigger-list">
+    <div class="trigger-card">
+      <div class="trigger-when">AFTER INSERT<br>auth.users</div>
+      <div>
+        <div class="trigger-name">on_auth_user_created</div>
+        <div class="trigger-desc">Lè yon moun enskri sou Supabase Auth, kreye yon ranje nan <code>profiles</code> otomatikman ak <code>full_name</code> ak <code>role</code> soti nan metadata.</div>
+      </div>
+    </div>
+    <div class="trigger-card">
+      <div class="trigger-when">BEFORE UPDATE<br>properties</div>
+      <div>
+        <div class="trigger-name">properties_updated_at</div>
+        <div class="trigger-desc">Mete <code>updated_at = now()</code> otomatikman chak fwa yon pwopriyete modifye. Pa bezwen fè sa nan kòd aplikasyon an.</div>
+      </div>
+    </div>
+    <div class="trigger-card">
+      <div class="trigger-when">BEFORE UPDATE<br>profiles</div>
+      <div>
+        <div class="trigger-name">profiles_updated_at</div>
+        <div class="trigger-desc">Menm bagay — mete <code>updated_at = now()</code> otomatikman lè pwofil yon itilizatè chanje.</div>
+      </div>
+    </div>
+    <div class="trigger-card">
+      <div class="trigger-when">AFTER INSERT<br>contact_requests</div>
+      <div>
+        <div class="trigger-name">after_contact_request</div>
+        <div class="trigger-desc">Lè yon moun klike WhatsApp, inkremente <code>properties.contact_count + 1</code> otomatikman. Analytics an tan reyèl san kòd siplemantè.</div>
+      </div>
+    </div>
+    <div class="trigger-card">
+      <div class="trigger-when">AFTER INSERT<br>reports</div>
+      <div>
+        <div class="trigger-name">after_report_created</div>
+        <div class="trigger-desc">Inkremente <code>report_count + 1</code>. Si <code>report_count ≥ 5</code>, mete pwopriyete a <strong>suspended</strong> otomatikman — retire li nan rezilta rechèch la.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ RLS ══════════════ -->
+  <h2>Sekirite — Row Level Security (RLS)</h2>
+  <p style="color:#475569; font-size:12px; margin-bottom:16px;">
+    RLS pèmèt chak itilizatè wè <em>sèlman</em> done ki pou li. Admin yo itilize <strong>service role key</strong>
+    (bypasse RLS) pou wè tout bagay. Anon (pa konekte) ka wè anons aktif sèlman.
+  </p>
+  <div class="rls-grid">
+    <div class="rls-card">
+      <div class="rls-table-name">profiles</div>
+      <div class="rls-policy"><span>Tout moun ka LI tout pwofil</span><span class="rls-op op-select">SELECT</span></div>
+      <div class="rls-policy"><span>Sèlman mèt kont lan ka MODIFYE pwofil li</span><span class="rls-op op-update">UPDATE</span></div>
+    </div>
+    <div class="rls-card">
+      <div class="rls-table-name">properties</div>
+      <div class="rls-policy"><span>Tout moun ka wè anons AKTIF</span><span class="rls-op op-select">SELECT</span></div>
+      <div class="rls-policy"><span>Mèt kay wè TOUT anons li (ki kèlkeswa statik)</span><span class="rls-op op-select">SELECT</span></div>
+      <div class="rls-policy"><span>Sèlman konekte ka KREYE anons</span><span class="rls-op op-insert">INSERT</span></div>
+      <div class="rls-policy"><span>Sèlman mèt kay la ka MODIFYE</span><span class="rls-op op-update">UPDATE</span></div>
+      <div class="rls-policy"><span>Sèlman mèt kay la ka EFASE</span><span class="rls-op op-delete">DELETE</span></div>
+    </div>
+    <div class="rls-card">
+      <div class="rls-table-name">property_photos</div>
+      <div class="rls-policy"><span>Tout moun ka wè foto yo</span><span class="rls-op op-select">SELECT</span></div>
+      <div class="rls-policy"><span>Sèlman mèt pwopriyete a ka jere foto</span><span class="rls-op op-all">ALL</span></div>
+    </div>
+    <div class="rls-card">
+      <div class="rls-table-name">favorites</div>
+      <div class="rls-policy"><span>Chak itilizatè jere sèlman favori PA li</span><span class="rls-op op-all">ALL</span></div>
+    </div>
+    <div class="rls-card">
+      <div class="rls-table-name">contact_requests</div>
+      <div class="rls-policy"><span>Nenpòt moun (menm anon) ka kreye yon kontakt</span><span class="rls-op op-insert">INSERT</span></div>
+      <div class="rls-policy"><span>Sèlman mèt anons lan wè ki moun ki kontakte</span><span class="rls-op op-select">SELECT</span></div>
+    </div>
+    <div class="rls-card">
+      <div class="rls-table-name">reports</div>
+      <div class="rls-policy"><span>Tout itilizatè konekte ka siyal yon anons</span><span class="rls-op op-insert">INSERT</span></div>
+      <div class="rls-policy"><span>Admin sèlman ka wè ak rezoud rapò yo</span><span class="rls-op op-all">ALL</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ INDEX ══════════════ -->
+  <h2>Index (Vitès Rechèch)</h2>
+  <table class="index-table">
+    <thead>
+      <tr><th>Non Index</th><th>Tab</th><th>Kolòn(yo)</th><th>Kondisyon</th><th>Objektif</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="col-name">idx_properties_location</td><td>properties</td><td class="col-type">location_id</td><td>—</td><td class="col-note">Filtre pa komin/katye</td></tr>
+      <tr><td class="col-name">idx_properties_type</td><td>properties</td><td class="col-type">property_type</td><td>—</td><td class="col-note">Filtre pa tip pwopriyete</td></tr>
+      <tr><td class="col-name">idx_properties_status</td><td>properties</td><td class="col-type">status</td><td>—</td><td class="col-note">Filtre pa statik (active, pending...)</td></tr>
+      <tr><td class="col-name">idx_properties_price_mwa</td><td>properties</td><td class="col-type">price_monthly</td><td>NOT NULL sèlman</td><td class="col-note">Rechèch pri lwaye</td></tr>
+      <tr><td class="col-name">idx_properties_price_sale</td><td>properties</td><td class="col-type">price_sale</td><td>NOT NULL sèlman</td><td class="col-note">Rechèch pri vant</td></tr>
+      <tr><td class="col-name">idx_properties_featured</td><td>properties</td><td class="col-type">is_featured, created_at DESC</td><td>status = 'active'</td><td class="col-note">Anons featured an tèt</td></tr>
+      <tr><td class="col-name">idx_properties_owner</td><td>properties</td><td class="col-type">owner_id</td><td>—</td><td class="col-note">Dashboard mèt kay</td></tr>
+      <tr><td class="col-name">idx_photos_property</td><td>property_photos</td><td class="col-type">property_id, display_order</td><td>—</td><td class="col-note">Chaje foto nan lòd</td></tr>
+      <tr><td class="col-name">idx_favorites_user</td><td>favorites</td><td class="col-type">user_id</td><td>—</td><td class="col-note">Lis favori yon itilizatè</td></tr>
+      <tr><td class="col-name">idx_contact_property</td><td>contact_requests</td><td class="col-type">property_id</td><td>—</td><td class="col-note">Analytics kontakt pa anons</td></tr>
+      <tr><td class="col-name">idx_reports_property</td><td>reports</td><td class="col-type">property_id</td><td>status = 'open'</td><td class="col-note">Rapò ouvè sèlman (admin panel)</td></tr>
+      <tr><td class="col-name">unique_cover_photo</td><td>property_photos</td><td class="col-type">property_id</td><td>is_cover = true</td><td class="col-note">Garanti: 1 sèl foto kouvet pa pwopriyete</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════ FOOTER ══════════════ -->
+  <div class="footer">
+    <span>KaySid — Platfòm Imobilye Sid Ayiti</span>
+    <span>supabase/schema.sql · supabase/seed.sql</span>
+  </div>
+
+</div>
+</body>
+</html>

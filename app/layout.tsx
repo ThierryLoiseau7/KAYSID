@@ -7,24 +7,24 @@ import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 export const metadata: Metadata = {
   title: {
-    default: "KaySid — Jwenn Kay ou nan Sid Ayiti",
-    template: "%s | KaySid",
+    default: "PouPiyay — Achte, Vann, Lwaye nan Ayiti",
+    template: "%s | PouPiyay",
   },
   description:
-    "Platfòm nimewo 1 pou jwenn lojman nan Sid Ayiti. Studio, Apatman, Villa, Terin nan Okay, Jakmèl, Port-Salut, Jeremi ak plis ankò.",
-  keywords: ["kay Okay", "lojman Sid Ayiti", "kay Jakmèl", "lokatè Ayiti", "KaySid"],
+    "Platfòm anons nimewo 1 Ayiti. Vann, achte ak lwaye: kay, machin, elektwonik, mèb, sèvis ak plis ankò.",
+  keywords: ["anons Ayiti", "achte vann Ayiti", "PouPiyay", "kay Ayiti", "machin Ayiti"],
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   openGraph: {
     type: "website",
     locale: "ht_HT",
-    siteName: "KaySid",
-    title: "KaySid — Jwenn Kay ou nan Sid Ayiti",
+    siteName: "PouPiyay",
+    title: "PouPiyay — Achte, Vann, Lwaye nan Ayiti",
     description:
-      "Chèche studio, apatman, villa ak terin nan Okay, Jakmèl, Port-Salut, Jeremi ak zòn Sid yo.",
+      "Mache anons nimewo 1 Ayiti. Kay, machin, elektwonik, mèb, sèvis ak plis ankò.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "KaySid — Jwenn Kay ou nan Sid Ayiti",
+    title: "PouPiyay — Achte, Vann, Lwaye nan Ayiti",
   },
 };
 

@@ -22,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
                 <div>
                   <p className="text-white text-sm font-bold">Admin</p>
-                  <p className="text-slate-400 text-xs">KaySid Panel</p>
+                  <p className="text-slate-400 text-xs">PouPiyay Panel</p>
                 </div>
               </div>
               <nav className="space-y-0.5">

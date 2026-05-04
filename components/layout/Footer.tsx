@@ -89,8 +89,8 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2 text-sm text-slate-400">
                 <Mail className="w-4 h-4 text-caribbean-500 shrink-0" />
-                <a href="mailto:info@kaysid.ht" className="hover:text-caribbean-400 transition-colors">
-                  info@kaysid.ht
+                <a href="mailto:info@piyay.ht" className="hover:text-caribbean-400 transition-colors">
+                  info@piyay.ht
                 </a>
               </li>
             </ul>
@@ -106,7 +106,7 @@ export default function Footer() {
 
         <div className="mt-12 pt-6 border-t border-caribbean-900 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-slate-500">
-            © 2025 KaySid. Tout dwa rezève. Fèt ak ❤ pou Sid Ayiti.
+            © 2025 PouPiyay. Tout dwa rezève. Fèt ak ❤ pou Ayiti.
           </p>
           <div className="flex items-center gap-4 text-xs text-slate-500">
             <Link href="/privacy" className="hover:text-slate-400 transition-colors">

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Search, MapPin, PlusCircle, LogIn, Home, User, LogOut } from "lucide-react";
+import { Search, MapPin, PlusCircle, LogIn, Tag, User, LogOut } from "lucide-react";
 import { COMMUNES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -81,10 +81,10 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-1.5 shrink-0">
             <div className="w-8 h-8 bg-caribbean-700 rounded-lg flex items-center justify-center">
-              <Home className="w-4 h-4 text-white" />
+              <Tag className="w-4 h-4 text-white" />
             </div>
             <span className="text-lg font-extrabold text-slate-900 hidden sm:block">
-              Kay<span className="text-caribbean-600">Sid</span>
+              Pou<span className="text-caribbean-600">Piyay</span>
             </span>
           </Link>
 

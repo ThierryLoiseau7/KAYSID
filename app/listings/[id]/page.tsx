@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: property.description ?? `${getPropertyTypeLabel(property.property_type)} nan ${property.location?.commune}`,
     };
   } catch {
-    return { title: "KaySid" };
+    return { title: "PouPiyay" };
   }
 }
 

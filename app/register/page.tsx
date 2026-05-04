@@ -102,7 +102,7 @@ export default function RegisterPage() {
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <BadgeCheck className="w-10 h-10 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Bienveni nan KaySid!</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Bienveni nan PouPiyay!</h2>
             <p className="text-slate-500 text-sm mb-2">
               Kont ou kreye pou <strong className="text-slate-700">{fullName}</strong>.
             </p>
@@ -308,7 +308,7 @@ export default function RegisterPage() {
                 <Link href="/privacy" className="text-caribbean-600 hover:underline">
                   Konfidansyalite
                 </Link>{" "}
-                KaySid.
+                PouPiyay.
               </p>
 
               <div className="flex gap-3 pt-1">
