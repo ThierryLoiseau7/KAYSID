@@ -13,7 +13,7 @@ export default function Footer() {
                 <Home className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold">
-                Kay<span className="text-caribbean-400">Sid</span>
+                Pou<span className="text-caribbean-400">Piyay</span>
               </span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed">
@@ -89,8 +89,8 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2 text-sm text-slate-400">
                 <Mail className="w-4 h-4 text-caribbean-500 shrink-0" />
-                <a href="mailto:info@piyay.ht" className="hover:text-caribbean-400 transition-colors">
-                  info@piyay.ht
+                <a href="mailto:info@poupiyay.ht" className="hover:text-caribbean-400 transition-colors">
+                  info@poupiyay.ht
                 </a>
               </li>
             </ul>
